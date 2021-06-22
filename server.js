@@ -1,21 +1,8 @@
-const express = require("express");
-const {pool, client} = require("./Models/db_setup");
-// Import routes
-const bookRoute = require("./Routes/book");
-const authorRoute = require("./Routes/author");
-
-const server = express();
-
-// Attach the routes
-server.use(express.json());
-server.use("/api/book", bookRoute);
-server.use("/api/author", authorRoute);
-
-
+const app = require("./app.js");
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
 

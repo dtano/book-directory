@@ -11,13 +11,13 @@ CREATE TABLE books(
     date_published DATE
 );
 
-CREATE TABLE authors{
+CREATE TABLE authors(
     author_id SERIAL PRIMARY KEY,
     given_names VARCHAR(255) NOT NULL,
     surname VARCHAR(255) NOT NULL,
     country VARCHAR(255),
     bio TEXT
-};
+);
 
 ALTER TABLE books
 ALTER COLUMN author SET NOT NULL;

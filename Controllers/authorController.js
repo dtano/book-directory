@@ -5,10 +5,15 @@ const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries} = req
 // Create a new author entry
 const postAuthor = async (req, res) => {
     try{
-        //const {given_names, surname, country, bio} = req.body;
-        const {insertQuery, values} = createInsertQuery("authors", req.body);
-        // What if bio is empty???
-        const newAuthor = await pool.query(insertQuery, values);
+        // Need to validate the given data
+        // name and country of origin
+        if (await checkDupEntry(req.body, "authors")){
+            throw new Error("Duplicate author entry");
+        }
+        
+        const {query, values} = createInsertQuery("authors", req.body);
+        
+        const newAuthor = await pool.query(query, values);
         res.status(200).json(newAuthor);
 
     }catch(err){
@@ -72,5 +77,6 @@ module.exports = {
     postAuthor,
     getAllAuthors,
     getAuthor,
-    deleteAuthor
+    deleteAuthor,
+    updateAuthor
 }

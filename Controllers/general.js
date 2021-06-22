@@ -39,9 +39,9 @@ const checkDupEntry = async (entry, tableName) => {
             break;
         case "authors":
             // If an author has the same name and country of origin, then i have no idea
-            query += `WHERE full_name = $1`
-            // Can't use full name anymore
-            duplicates = await pool.query(query, [entry.full_name]);
+            query += `WHERE surname = $1 AND given_names = $2`
+            // Ideally, the books created by this author needs to be checked too
+            duplicates = await pool.query(query, [entry.surname, entry.given_names]);
             if(duplicates.rows.length > 0){
                 return true;
             }
@@ -103,7 +103,6 @@ const createInsertQuery = (tableName, data) => {
 
     return {query, values};
 }
-
 
 module.exports = {
     getAllEntries,

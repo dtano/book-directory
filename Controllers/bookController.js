@@ -12,17 +12,12 @@ const postBook = async (req, res) => {
             - Fix date published bug (Keeps showing up as null, probably cuz it came as a string)
         */
         if (await checkDupEntry(req.body, "books")){
-            throw new Error("Duplicate entry");
+            throw new Error("Duplicate book entry");
         }
 
         // author has to be an id. If its a new author, then the user is prompted to make a new author entry
         //const {title, author, pages=0, date_published} = req.body;
         const {query, values} = createInsertQuery("books", req.body);
-
-        // const newBook = await pool.query(
-        //     "INSERT INTO books (title, author, pages, date_published) VALUES($1, $2, $3, $4) RETURNING *",
-        //     [title, author, pages, date_published]
-        // );
 
         const newBook = await pool.query(query, values);
 

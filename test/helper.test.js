@@ -1,6 +1,6 @@
 const { TestWatcher } = require("jest");
 const supertest = require("supertest");
-const {getAllEntries, completeStrip, checkDupEntry, createUpdateQuery} = require("../Controllers/general");
+const {completeStrip, createUpdateQuery} = require("../Controllers/general");
 
 describe("Creates the corrrect update query for an instance", () => {
     const conditions = {book_id: "1234"}
