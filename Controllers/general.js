@@ -73,7 +73,7 @@ const createUpdateQuery = (tableName, conditions = {}, data = {}) => {
 
     const keys = Object.keys(conditions);
     const condTuples = keys.map((k, index) => `${k} = $${index + 1 + len} `);
-    const condPlaceholders = condTuples.join(" AND ");
+    const condPlaceholders = condTuples.join("AND ");
 
     query += ` WHERE ${condPlaceholders} RETURNING *`;
     
@@ -91,6 +91,10 @@ const createUpdateQuery = (tableName, conditions = {}, data = {}) => {
 
 // Creates an INSERT query with the given data and tablename
 const createInsertQuery = (tableName, data) => {
+    if(!tableName || Object.keys(data).length === 0){
+        return {"query": "", "values": []};
+    }
+    
     const dKeys = Object.keys(data);
     const columnNamesStr = dKeys.join(", ");
     const valuesStr = dKeys.map((key, ind) => `$${ind + 1}`).join(", ");
