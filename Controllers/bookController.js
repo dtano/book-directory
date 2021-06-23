@@ -79,7 +79,7 @@ const getBook = async (req, res) => {
         }
         res.status(200).json(book.rows[0]);
     }catch(err){
-        console.error(err.message);
+        //console.error(err.message);
         res.status(400).json(err.message);
     }
 }
