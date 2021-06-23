@@ -1,6 +1,9 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
 const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries} = require("./general");
+const path = require("path");
+// Where images will be stored in the project directory
+const authorUploadPath = path.join("public", "uploads/authors");
 
 // Create a new author entry
 const postAuthor = async (req, res) => {

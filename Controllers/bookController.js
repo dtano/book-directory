@@ -1,6 +1,10 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
 const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries} = require("./general");
+const path = require("path");
+
+// Where images will be stored in the project directory
+const coverUploadPath = path.join("public", "uploads/bookCovers");
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
@@ -111,6 +115,12 @@ const getAllBooks = async (req, res) => {
         res.status(200).json(allBooks);
     }catch(err){
         res.status(400).json(err.message);
+    }
+}
+
+const uploadCoverImage = async (fileName) => {
+    if(fileName === null){
+        throw new Error("No file given");
     }
 }
 

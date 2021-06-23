@@ -29,7 +29,7 @@ describe("Book post route", () => {
             title: "Norwegian Wood",
             author: "Haruki Murakami",
             pages: 450,
-            date_published: "22/03/1989"
+            date_published: "1989-03-22"
         });
         expect(response.statusCode).toBe(200);
     });
@@ -39,7 +39,7 @@ describe("Book post route", () => {
             title: "Norwegian Wood",
             author: "Haruki Murakami",
             pages: 450,
-            date_published: "22/03/1989"
+            date_published: "1989-03-22"
         });
         expect(response.statusCode).toBe(400);
     });
@@ -49,7 +49,7 @@ describe("Book post route", () => {
             title: "Norwegian Wood",
             author: "John Lennon",
             pages: 200,
-            date_published: "01/01/1975"
+            date_published: "1975-01-01"
         });
         expect(response.statusCode).toBe(200);
         book_id = response.body.rows[0].book_id;
@@ -60,7 +60,7 @@ describe("Book post route", () => {
             name: "Illegal entry",
             writer: "Anonymous",
             pages: 200,
-            date_published: "01/01/1975"
+            date_published: "1975-01-01"
         });
         expect(response.statusCode).toBe(400);
         expect(response.body).toBeDefined();
@@ -74,7 +74,7 @@ describe("Get book route", () => {
         expect(response.body).toStrictEqual({
             "author": "John Lennon",
             "book_id": 2,
-            "date_published": "1974-12-31T17:00:00.000Z",
+            "date_published": "1975-01-01",
             "pages": 200,
             "title": "Norwegian Wood",
         });
@@ -104,7 +104,7 @@ describe("Update book route", () => {
         expect(response.body).toStrictEqual({
             "author": "John Lennon",
             "book_id": 2,
-            "date_published": "1974-12-31T17:00:00.000Z",
+            "date_published": "1975-01-01",
             "pages": 200,
             "title": "New Title",
         });
@@ -114,13 +114,13 @@ describe("Update book route", () => {
         const response = await request(app).put(`/api/book/${book_id}`).send({
             author: "Stephen Queen",
             pages: 300,
-            date_published: "03/04/1985"
+            date_published: "1985-04-03"
         });
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
             "author": "Stephen Queen",
             "book_id": 2,
-            "date_published": "1985-04-02T17:00:00.000Z",
+            "date_published": "1985-04-03",
             "pages": 300,
             "title": "New Title",
         });
@@ -150,7 +150,7 @@ describe("Delete book route", () => {
         });
         expect(response.statusCode).toBe(200);
         expect(response.body.length).toBe(2);
-    })
+    });
 
     it("Fails to delete an entry with a non-existent ID", async () => {
         const response = await request(app).delete(`/api/book/multiple`).send({
@@ -164,5 +164,5 @@ describe("Delete book route", () => {
         const response = await request(app).delete(`/api/book/multiple`).send({});
         expect(response.statusCode).toBe(400);
         expect(response.body).toBeDefined();
-    })
+    });
 });
