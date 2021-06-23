@@ -31,6 +31,9 @@ const postBook = async (req, res) => {
 const updateBook = async (req, res) => {
     const { id } = req.params;
     try{
+        if(Object.keys(req.body).length === 0){
+            throw new Error("The body is empty");
+        }
         const { query, values } = createUpdateQuery("books", {book_id: id}, req.body);
         updatedEntry = await pool.query(query, values);
         res.status(200).json(updatedEntry.rows[0]);
@@ -44,6 +47,9 @@ const deleteMultipleBooks = async (req, res) => {
     try{
         // req.body should hold a list of ids to delete
         const { deleteIDs } = req.body;
+        if(!deleteIDs || deleteIDs.length === 0){
+            throw new Error("No ids to delete");
+        }
         // Map the ids into its '$' numbers for the database query
         const delTupes = deleteIDs.map((id, index) => `$${index + 1}`);
         const objsToDelete = delTupes.join(", ");

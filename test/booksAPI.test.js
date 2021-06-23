@@ -22,7 +22,7 @@ afterAll(async () => {
 
 // This book_id will be used to test the update and delete queries
 let book_id;
-
+// Dates are off, need to check
 describe("Book post route", () => {
     it("Should create a new book entry", async () => {
         const response = await request(app).post("/api/book").send({
@@ -32,7 +32,6 @@ describe("Book post route", () => {
             date_published: "22/03/1989"
         });
         expect(response.statusCode).toBe(200);
-        book_id = response.body.rows[0].book_id;
     });
 
     it("Prevent duplicate book from being created", async () => {
@@ -53,6 +52,7 @@ describe("Book post route", () => {
             date_published: "01/01/1975"
         });
         expect(response.statusCode).toBe(200);
+        book_id = response.body.rows[0].book_id;
     });
 
     it("Prevent from posting a book entry with the wrong properties", async () => {
@@ -72,10 +72,10 @@ describe("Get book route", () => {
         const response = await request(app).get(`/api/book/${book_id}`);
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "author": "Haruki Murakami",
-            "book_id": 1,
-            "date_published": "1989-03-21T17:00:00.000Z",
-            "pages": 450,
+            "author": "John Lennon",
+            "book_id": 2,
+            "date_published": "1974-12-31T17:00:00.000Z",
+            "pages": 200,
             "title": "Norwegian Wood",
         });
     });
@@ -89,6 +89,80 @@ describe("Get book route", () => {
     it("Should get all book entries", async () => {
         const response = await request(app).get(`/api/book`);
         expect(response.statusCode).toBe(200);
+        // 2 is the number of entries that were created prior to this test
         expect(response.body.length).toBe(2);
+    });
+});
+
+// Make sure user can't change their id
+describe("Update book route", () => {
+    it("Change the title", async () => {
+        const response = await request(app).put(`/api/book/${book_id}`).send({
+            title: "New Title"
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toStrictEqual({
+            "author": "John Lennon",
+            "book_id": 2,
+            "date_published": "1974-12-31T17:00:00.000Z",
+            "pages": 200,
+            "title": "New Title",
+        });
+    });
+
+    it("Change multiple properties (author, pages and date)", async () => {
+        const response = await request(app).put(`/api/book/${book_id}`).send({
+            author: "Stephen Queen",
+            pages: 300,
+            date_published: "03/04/1985"
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toStrictEqual({
+            "author": "Stephen Queen",
+            "book_id": 2,
+            "date_published": "1985-04-02T17:00:00.000Z",
+            "pages": 300,
+            "title": "New Title",
+        });
+    });
+
+    it("Should fail to update if at least one of the properties is wrong", async () => {
+        // need to check whether author is changed or not
+        const response = await request(app).put(`/api/book/${book_id}`).send({
+            author: "Jimmy Cox",
+            country: "Australia",
+        });
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toBeDefined();
+    });
+
+    it("Should not process an update when body is empty", async () => {
+        const response = await request(app).put(`/api/book/${book_id}`).send({});
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toBeDefined();
+    });
+});
+
+describe("Delete book route", () => {
+    it("Successfully delete multiple entries", async () => {
+        const response = await request(app).delete(`/api/book/multiple`).send({
+            deleteIDs: [1, 2]
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.length).toBe(2);
+    })
+
+    it("Fails to delete an entry with a non-existent ID", async () => {
+        const response = await request(app).delete(`/api/book/multiple`).send({
+            deleteIDs: [1]
+        });
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toBeDefined();
+    });
+
+    it("Does not proceed with deleting when body is empty", async () => {
+        const response = await request(app).delete(`/api/book/multiple`).send({});
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toBeDefined();
     })
 });
