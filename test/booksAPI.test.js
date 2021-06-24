@@ -8,9 +8,8 @@ const tableName = "books";
 beforeAll(async() => {
     // create new books table
     await pool.query(`CREATE TABLE ${tableName}(
-        book_id SERIAL PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
-        author VARCHAR(255) NOT NULL,
         pages INTEGER,
         date_published DATE
     )`)
@@ -27,7 +26,6 @@ describe("Book post route", () => {
     it("Should create a new book entry", async () => {
         const response = await request(app).post("/api/book").send({
             title: "Norwegian Wood",
-            author: "Haruki Murakami",
             pages: 450,
             date_published: "1989-03-22"
         });
@@ -37,7 +35,6 @@ describe("Book post route", () => {
     it("Prevent duplicate book from being created", async () => {
         const response = await request(app).post("/api/book").send({
             title: "Norwegian Wood",
-            author: "Haruki Murakami",
             pages: 450,
             date_published: "1989-03-22"
         });
@@ -47,7 +44,6 @@ describe("Book post route", () => {
     it("Allow duplicate titles, but different author", async () => {
         const response = await request(app).post("/api/book").send({
             title: "Norwegian Wood",
-            author: "John Lennon",
             pages: 200,
             date_published: "1975-01-01"
         });
@@ -58,7 +54,6 @@ describe("Book post route", () => {
     it("Prevent from posting a book entry with the wrong properties", async () => {
         const response = await request(app).post("/api/book").send({
             name: "Illegal entry",
-            writer: "Anonymous",
             pages: 200,
             date_published: "1975-01-01"
         });
@@ -72,8 +67,7 @@ describe("Get book route", () => {
         const response = await request(app).get(`/api/book/${book_id}`);
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "author": "John Lennon",
-            "book_id": 2,
+            "id": 2,
             "date_published": "1975-01-01",
             "pages": 200,
             "title": "Norwegian Wood",
@@ -102,7 +96,6 @@ describe("Update book route", () => {
         });
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "author": "John Lennon",
             "book_id": 2,
             "date_published": "1975-01-01",
             "pages": 200,
@@ -112,13 +105,11 @@ describe("Update book route", () => {
 
     it("Change multiple properties (author, pages and date)", async () => {
         const response = await request(app).put(`/api/book/${book_id}`).send({
-            author: "Stephen Queen",
             pages: 300,
             date_published: "1985-04-03"
         });
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "author": "Stephen Queen",
             "book_id": 2,
             "date_published": "1985-04-03",
             "pages": 300,
@@ -129,7 +120,7 @@ describe("Update book route", () => {
     it("Should fail to update if at least one of the properties is wrong", async () => {
         // need to check whether author is changed or not
         const response = await request(app).put(`/api/book/${book_id}`).send({
-            author: "Jimmy Cox",
+            title: "Aussie Rules",
             country: "Australia",
         });
         expect(response.statusCode).toBe(400);

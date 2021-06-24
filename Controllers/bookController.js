@@ -10,10 +10,10 @@ const coverUploadPath = path.join("public", "uploads/bookCovers");
 const postBook = async (req, res) => {
     try{
         /*
-            TODO
-            - Need to check title and make sure its formatted right
-            - Check author name format as well
-            - Fix date published bug (Keeps showing up as null, probably cuz it came as a string)
+            Make book entry,
+            Make author entry (if necessary) (How do I include the author id in the request body????)
+                - Maybe just keep it there and ignore it when making the insert query?
+                - Or make book and author seprately, then have another api that links books to authors
         */
         if (await checkDupEntry(req.body, "books")){
             throw new Error("Duplicate book entry");
@@ -38,6 +38,7 @@ const updateBook = async (req, res) => {
         if(Object.keys(req.body).length === 0){
             throw new Error("The body is empty");
         }
+        // book_author entry needs to be updated as well if author is changed
         const { query, values } = createUpdateQuery("books", {book_id: id}, req.body);
         updatedEntry = await pool.query(query, values);
         res.status(200).json(updatedEntry.rows[0]);
