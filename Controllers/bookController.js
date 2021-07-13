@@ -89,24 +89,24 @@ const updateBook = async (req, res) => {
         
         // book_author entry needs to be updated as well if author is changed
         const { query, values } = createUpdateQuery("books", {id: id}, req.body);
-        updatedEntry = await pool.query(query, values);
+        const updatedEntry = await pool.query(query, values);
 
-        // Means that we're going to have to update the author as well
-        if(checkAuthorPresence(req.body)){
-            // But we need to check whether the given author id is the same as the original or not
-            const authors = await getBookAuthor(updatedEntry.rows[0]);
-            
-            // If there are multiple authors, we're going to have to find the one entry that has 
-        }
-
-        if(req.body.hasOwnProperty("old_author_id") && req.body.hasOwnProperty("new_author_id")){
-            if(req.body.old_author_id != req.body.new_author_id){
-                const bothPresent = await checkAuthorPresence(req.body.old_author_id) && await checkAuthorPresence(req.body.new_author_id);
-                // Then we can change the author
-                if(bothPresent){
-                    const { query, values } = createUpdateQuery("books", {author_id: req.body.old_author_id}, {author_id: req.body.new_author_id});
-                    await pool.query(query, values);
-                }
+        // If the user wants to change the writer then we'll need to get a list of the authors of the book
+        if(updatedEntry.rows.length > 0){
+            const authors = await getBookAuthor(updatedEntry.rows[0].id);
+            // Now check if the given author id to be replaced is actually an author of this book
+            // authors would be an array of jsons 
+            if(authors.length > 0){
+                authors.forEach((author) => {
+                    if(author.id === req.body.oldAuthorID){
+                        // Now that we know the id to replace is accurate, we need to check if the new author id exists
+                        if(checkAuthorPresence(req.body.newAuthorID)){
+                            // It is an author that exists in the database
+                            const {changeAuthorQuery, changeAuthorValues} = createUpdateQuery("book_author", {book_id: id, author_id: req.body.oldAuthorID}, {author_id: req.body.newAuthorID});
+                            const authorChange = await pool.query(changeAuthorQuery, changeAuthorValues);
+                        }
+                    }
+                });
             }
         }
 
