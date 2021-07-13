@@ -13,7 +13,12 @@ const postBook = async (req, res) => {
             DIFFERENT APPROACH
         */
         // Check if author is specified
-        if(!checkAuthorPresence(req.body)){
+        if(!req.body.hasOwnProperty("author_id")){
+            throw new Error("No author specified");
+        }
+        
+        // Let's just assume a book has only one author
+        if(!checkAuthorPresence(req.body.author_id)){
             throw new Error("Author is either unspecified or they are unlisted");
         }
         
@@ -53,15 +58,10 @@ const linkBookToAuthor = async (book_id, author_id) => {
 }
 
 // Accepts request body and does an author check
-const checkAuthorPresence = async (body) => {
-    // Check if author is specified
-    if(!body.hasOwnProperty("author_id")){
-        return false;
-    }
-
+const checkAuthorPresence = async (author_id) => {
     // Check if the author id exists 
     const authorPresenceQuery = "SELECT * FROM authors WHERE id = $1";
-    const selectedAuthor = await pool.query(authorPresenceQuery, [body.author_id]);
+    const selectedAuthor = await pool.query(authorPresenceQuery, [author_id]);
 
     if(selectedAuthor == null || selectedAuthor.rows.length == 0){
         return false;
@@ -71,8 +71,13 @@ const checkAuthorPresence = async (body) => {
 
 }
 
-// // Looks for author with the given id
-// const checkAuthor
+// Returns a list of authors who wrote the book
+const getBookAuthor = async (book) => {
+    let query = "SELECT a.id, a.given_names, a.surname FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = $1;"
+    const writers = await pool.query(query, [book.id]);
+
+    return writers.rows;
+}
 
 // Update book entry with the values in the request body
 const updateBook = async (req, res) => {
@@ -81,9 +86,31 @@ const updateBook = async (req, res) => {
         if(Object.keys(req.body).length === 0){
             throw new Error("The body is empty");
         }
+        
         // book_author entry needs to be updated as well if author is changed
-        const { query, values } = createUpdateQuery("books", {book_id: id}, req.body);
+        const { query, values } = createUpdateQuery("books", {id: id}, req.body);
         updatedEntry = await pool.query(query, values);
+
+        // Means that we're going to have to update the author as well
+        if(checkAuthorPresence(req.body)){
+            // But we need to check whether the given author id is the same as the original or not
+            const authors = await getBookAuthor(updatedEntry.rows[0]);
+            
+            // If there are multiple authors, we're going to have to find the one entry that has 
+        }
+
+        if(req.body.hasOwnProperty("old_author_id") && req.body.hasOwnProperty("new_author_id")){
+            if(req.body.old_author_id != req.body.new_author_id){
+                const bothPresent = await checkAuthorPresence(req.body.old_author_id) && await checkAuthorPresence(req.body.new_author_id);
+                // Then we can change the author
+                if(bothPresent){
+                    const { query, values } = createUpdateQuery("books", {author_id: req.body.old_author_id}, {author_id: req.body.new_author_id});
+                    await pool.query(query, values);
+                }
+            }
+        }
+
+
         res.status(200).json(updatedEntry.rows[0]);
     }catch(err){
         res.status(400).json(err.message);
@@ -102,7 +129,7 @@ const deleteMultipleBooks = async (req, res) => {
         const delTupes = deleteIDs.map((id, index) => `$${index + 1}`);
         const objsToDelete = delTupes.join(", ");
 
-        let delQuery = `DELETE FROM books WHERE book_id IN (${objsToDelete}) RETURNING *`
+        let delQuery = `DELETE FROM books WHERE id IN (${objsToDelete}) RETURNING *`
         const removed = await pool.query(delQuery, deleteIDs);
         
         // This means that the given ids don't exist
@@ -127,10 +154,14 @@ const deleteMultipleBooks = async (req, res) => {
 const getBook = async (req, res) => {
     const { id } = req.params;
     try{
-        var book = await pool.query("SELECT * FROM books WHERE book_id = ($1)", [id]);
+        var book = await pool.query("SELECT * FROM books WHERE id = ($1)", [id]);
         if(book.rows.length == 0){
             throw new Error(`Book with id = ${id} not found`);
         }
+
+        // Find the author
+        const authors = await getBookAuthor(book.rows[0]);
+        
         res.status(200).json(book.rows[0]);
     }catch(err){
         //console.error(err.message);
@@ -141,7 +172,7 @@ const getBook = async (req, res) => {
 const deleteBook = async (req, res) => {
     const { id } = req.params;
     try{
-        var deletedEntry = await pool.query("DELETE FROM books WHERE book_id = ($1) RETURNING *", [id]);
+        var deletedEntry = await pool.query("DELETE FROM books WHERE id = ($1) RETURNING *", [id]);
         if (deletedEntry.rows.length == 0){
             throw new Error(`There is possibly no entry with id = ${id}`);
         }
