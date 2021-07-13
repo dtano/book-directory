@@ -10,26 +10,69 @@ const coverUploadPath = path.join("public", "uploads/bookCovers");
 const postBook = async (req, res) => {
     try{
         /*
-            Make book entry,
-            Make author entry (if necessary) (How do I include the author id in the request body????)
-                - Maybe just keep it there and ignore it when making the insert query?
-                - Or make book and author seprately, then have another api that links books to authors
+            DIFFERENT APPROACH
         */
-        if (await checkDupEntry(req.body, "books")){
-            throw new Error("Duplicate book entry");
+        // Check if author is specified
+        if(!checkAuthorPresence(req.body)){
+            throw new Error("Author is either unspecified or they are unlisted");
         }
+        
+        const queryBody = {
+            title: req.body.title,
+            pages: req.body.pages,
+            date_published: req.body.date_published
+        };
+        
+        // Create an Insert query using the query body
+        const {query, values} = createInsertQuery("books", queryBody);
 
-        // author has to be an id. If its a new author, then the user is prompted to make a new author entry
-        //const {title, author, pages=0, date_published} = req.body;
-        const {query, values} = createInsertQuery("books", req.body);
-
+        // Make the new book entry
         const newBook = await pool.query(query, values);
 
+        // Then link the book to the author by creating an entry in the book_author table
+        const bookAuthorLink = await linkBookToAuthor(newBook.rows[0].id, req.body.author_id);
+
+        if(bookAuthorLink == null){
+            throw new Error("Failed to establish a link between book and author");
+        }
+
         res.status(200).json(newBook);
+
     }catch(err){
         res.status(400).json(err.message);
     }
 }
+
+// Creates an entry that links the book to the author
+const linkBookToAuthor = async (book_id, author_id) => {
+    // Create an entry in the book_author table
+    const {query, values} = createInsertQuery("book_author", {author_id: author_id, book_id: book_id});
+    const link = await pool.query(query, values);
+
+    return link;
+}
+
+// Accepts request body and does an author check
+const checkAuthorPresence = async (body) => {
+    // Check if author is specified
+    if(!body.hasOwnProperty("author_id")){
+        return false;
+    }
+
+    // Check if the author id exists 
+    const authorPresenceQuery = "SELECT * FROM authors WHERE id = $1";
+    const selectedAuthor = await pool.query(authorPresenceQuery, [body.author_id]);
+
+    if(selectedAuthor == null || selectedAuthor.rows.length == 0){
+        return false;
+    }
+
+    return true;
+
+}
+
+// // Looks for author with the given id
+// const checkAuthor
 
 // Update book entry with the values in the request body
 const updateBook = async (req, res) => {

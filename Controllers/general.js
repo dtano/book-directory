@@ -35,8 +35,10 @@ const checkDupEntry = async (entry, tableName) => {
                 throw new Error("The entry does not have the book identifier: title");
             }
             duplicates = await pool.query(query, [entry.title]);
+            // if(duplicates.rows.length > 0){
+
+            // }
             return checkDupBook(entry, duplicates);
-            break;
         case "authors":
             // If an author has the same name and country of origin, then i have no idea
             query += `WHERE surname = $1 AND given_names = $2`
@@ -108,10 +110,18 @@ const createInsertQuery = (tableName, data) => {
     return {query, values};
 }
 
+// Truncates the given table
+const resetTable = async (table_name) => {
+    // Need to check whether table_name is valid or not. Just assume that table_name will always be valid
+    const outcome = await pool.query("TRUNCATE TABLE $1", [table_name]);
+    console.log("Table has been truncated");
+}
+
 module.exports = {
     getAllEntries,
     completeStrip,
     checkDupEntry,
     createUpdateQuery,
-    createInsertQuery
+    createInsertQuery,
+    resetTable
 }
