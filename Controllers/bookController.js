@@ -2,6 +2,7 @@ const express = require("express");
 const {pool, client} = require("../Models/db_setup");
 const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries} = require("./general");
 const path = require("path");
+const format = require("pg-format");
 
 // Where images will be stored in the project directory
 const coverUploadPath = path.join("public", "uploads/bookCovers");
@@ -13,13 +14,19 @@ const postBook = async (req, res) => {
             DIFFERENT APPROACH
         */
         // Check if author is specified
-        if(!req.body.hasOwnProperty("author_id")){
+        if(!req.body.hasOwnProperty("author_ids")){
             throw new Error("No author specified");
         }
         
         // Let's just assume a book has only one author
-        if(!checkAuthorPresence(req.body.author_id)){
-            throw new Error("Author is either unspecified or they are unlisted");
+        // Or maybe let author ids be an array of ids
+        // if(!checkAuthorPresence(req.body.author_ids)){
+        //     throw new Error("Author is either unspecified or they are unlisted");
+        // }
+
+        // This assumes that author_id is an array of IDs
+        if(!checkAuthorPresenceAlt(req.body.author_ids)){
+            throw new Error("At least one of the specified authors does not exist in the database");
         }
         
         const queryBody = {
@@ -35,10 +42,11 @@ const postBook = async (req, res) => {
         const newBook = await pool.query(query, values);
 
         // Then link the book to the author by creating an entry in the book_author table
-        const bookAuthorLink = await linkBookToAuthor(newBook.rows[0].id, req.body.author_id);
+        // const bookAuthorLink = await linkBookToAuthor(newBook.rows[0].id, req.body.author_id);
+        const bookAuthorLinks = await linkBookToAuthors(newBook.rows[0].id, req.body.author_ids);
 
-        if(bookAuthorLink == null){
-            throw new Error("Failed to establish a link between book and author");
+        if(bookAuthorLinks == null || bookAuthorLinks.rows.length != req.body.author_ids.length){
+            throw new Error("Failed to establish a link between book and author(s)");
         }
 
         res.status(200).json(newBook);
@@ -57,6 +65,26 @@ const linkBookToAuthor = async (book_id, author_id) => {
     return link;
 }
 
+// Use this to link multiple authors to a book
+const linkBookToAuthors = async (book_id, author_ids) => {
+    // Now we need to make nested array that contains book_id and author_ids
+    if(author_ids.length == 0){
+        throw new Error("No authors specified");
+    }
+    
+    let values = [];
+
+    author_ids.forEach((author_id) => {
+        values.push([author_id, book_id]);
+    });
+
+    const query = format('INSERT INTO book_author(author_id, book_id) VALUES %L', values);
+    const links = await pool.query(query, []);
+
+    return links;
+}
+
+
 // Accepts request body and does an author check
 const checkAuthorPresence = async (author_id) => {
     // Check if the author id exists 
@@ -68,6 +96,23 @@ const checkAuthorPresence = async (author_id) => {
     }
 
     return true;
+
+}
+
+// Check the presence of an array of authors
+const checkAuthorPresenceAlt = async (author_ids = []) => {
+   if(author_ids.length === 0){
+       throw new Error("No authors specified");
+   }
+
+   const query = format("SELECT * FROM authors WHERE id IN %L", author_ids);
+   const authors = await pool.query(query, []);
+
+   if(authors.rows.length === author_ids.length){
+       // Means that all authors are valid
+       return true;
+   }
+   return false;
 
 }
 
