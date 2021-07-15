@@ -1,6 +1,6 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
-const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries} = require("./general");
+const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence} = require("./general");
 const path = require("path");
 const format = require("pg-format");
 
@@ -17,16 +17,15 @@ const postBook = async (req, res) => {
         if(!req.body.hasOwnProperty("author_ids")){
             throw new Error("No author specified");
         }
-        
-        // Let's just assume a book has only one author
-        // Or maybe let author ids be an array of ids
-        // if(!checkAuthorPresence(req.body.author_ids)){
-        //     throw new Error("Author is either unspecified or they are unlisted");
-        // }
 
         // This assumes that author_id is an array of IDs
-        if(!checkAuthorPresenceAlt(req.body.author_ids)){
+        if(!checkAuthorPresence(req.body.author_ids)){
             throw new Error("At least one of the specified authors does not exist in the database");
+        }
+
+        // Need to look for duplicates
+        if(checkDupEntry(req.body, "books")){
+            throw new Error("The given entry already exists in the database");
         }
         
         const queryBody = {
@@ -49,7 +48,7 @@ const postBook = async (req, res) => {
             throw new Error("Failed to establish a link between book and author(s)");
         }
 
-        res.status(200).json(newBook);
+        res.status(200).json(newBook.rows[0]);
 
     }catch(err){
         res.status(400).json(err.message);
@@ -78,50 +77,11 @@ const linkBookToAuthors = async (book_id, author_ids) => {
         values.push([author_id, book_id]);
     });
 
-    const query = format('INSERT INTO book_author(author_id, book_id) VALUES %L', values);
-    const links = await pool.query(query, []);
+    const query = format('INSERT INTO book_author(author_id, book_id) VALUES %L RETURNING *', values);
+    const links = await pool.query(query);
+    console.log(links.rows);
 
     return links;
-}
-
-
-// Accepts request body and does an author check
-const checkAuthorPresence = async (author_id) => {
-    // Check if the author id exists 
-    const authorPresenceQuery = "SELECT * FROM authors WHERE id = $1";
-    const selectedAuthor = await pool.query(authorPresenceQuery, [author_id]);
-
-    if(selectedAuthor == null || selectedAuthor.rows.length == 0){
-        return false;
-    }
-
-    return true;
-
-}
-
-// Check the presence of an array of authors
-const checkAuthorPresenceAlt = async (author_ids = []) => {
-   if(author_ids.length === 0){
-       throw new Error("No authors specified");
-   }
-
-   const query = format("SELECT * FROM authors WHERE id IN %L", author_ids);
-   const authors = await pool.query(query, []);
-
-   if(authors.rows.length === author_ids.length){
-       // Means that all authors are valid
-       return true;
-   }
-   return false;
-
-}
-
-// Returns a list of authors who wrote the book
-const getBookAuthor = async (book) => {
-    let query = "SELECT a.id, a.given_names, a.surname FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = $1;"
-    const writers = await pool.query(query, [book.id]);
-
-    return writers.rows;
 }
 
 // Update book entry with the values in the request body
@@ -137,24 +97,33 @@ const updateBook = async (req, res) => {
         const updatedEntry = await pool.query(query, values);
 
         // If the user wants to change the writer then we'll need to get a list of the authors of the book
-        if(updatedEntry.rows.length > 0){
+        if(updatedEntry.rows.length > 0 && req.body.hasOwnProperty("oldAuthorID") && req.body.hasOwnProperty("newAuthorID")){
             const authors = await getBookAuthor(updatedEntry.rows[0].id);
+            
+            // Check whether the new author id is a valid one
+            if (!(await checkAuthorPresence(req.body.newAuthorID))){
+                throw new Error("Entry updated, but author can't because the new author id given is not valid");
+            }
+
             // Now check if the given author id to be replaced is actually an author of this book
-            // authors would be an array of jsons 
+            // authors would be an array of jsons
+            let successfulChange = false; 
             if(authors.length > 0){
-                authors.forEach((author) => {
+                for(const author of authors){
                     if(author.id === req.body.oldAuthorID){
-                        // Now that we know the id to replace is accurate, we need to check if the new author id exists
-                        if(checkAuthorPresence(req.body.newAuthorID)){
-                            // It is an author that exists in the database
-                            const {changeAuthorQuery, changeAuthorValues} = createUpdateQuery("book_author", {book_id: id, author_id: req.body.oldAuthorID}, {author_id: req.body.newAuthorID});
-                            const authorChange = await pool.query(changeAuthorQuery, changeAuthorValues);
-                        }
+                        const {changeAuthorQuery, changeAuthorValues} = createUpdateQuery("book_author", {book_id: id, author_id: req.body.oldAuthorID}, {author_id: req.body.newAuthorID});
+                        const authorChange = await pool.query(changeAuthorQuery, changeAuthorValues);
+                        console.log("Book's author changed");
+                        successfulChange = true;
+                        break;
                     }
-                });
+                }
+            }
+
+            if(!successfulChange){
+                throw new Error("Author was not changed because the specified author to change is invalid");
             }
         }
-
 
         res.status(200).json(updatedEntry.rows[0]);
     }catch(err){

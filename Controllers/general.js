@@ -1,5 +1,6 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
+const format = require("pg-format");
 
 
 // A extensive strip of a string
@@ -13,14 +14,52 @@ const checkDupBook = async (book, duplicates) => {
     if(duplicates.rows.length > 0){
         for(dup of duplicates.rows){
             // Turn the author name into a singular lowercase string with no punctuation
-            let authorName = completeStrip(dup.author);
-            if(authorName === completeStrip(book.author)){
+            // let authorName = completeStrip(dup.author);
+            // if(authorName === completeStrip(book.author)){
+            //     return true;
+            // }
+
+            // Now we need to see if the author id is the same as the give information
+            const authors = await getBookAuthor(dup);
+            const idArr = [];
+            for(const author of authors){
+                idArr.push(author.id);
+            }
+            // Now we need to know whether book.author_ids is equal to authors, so we'll need a set
+            const authorSet = new Set(book.author_ids + idArr);
+            if(authorSet.size === book.author_ids.length){
+                // Means that this book with the same title, has the same authors as well
                 return true;
             }
         }
     }
     return false;
 }
+
+// Check the presence of an array of authors
+const checkAuthorPresence = async (author_ids = []) => {
+    if(author_ids.length === 0){
+        throw new Error("No authors specified");
+    }
+ 
+    const query = format("SELECT * FROM authors WHERE id IN (%L)", author_ids);
+    const authors = await pool.query(query, []);
+ 
+    if(authors.rows.length === author_ids.length){
+        // Means that all authors are valid
+        return true;
+    }
+    return false;
+ 
+ }
+ 
+ // Returns a list of authors who wrote the book
+ const getBookAuthor = async (book) => {
+     let query = "SELECT a.id, a.given_names, a.surname FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = $1;"
+     const writers = await pool.query(query, [book.id]);
+ 
+     return writers.rows;
+ }
 
 // Checks for duplicate entries in the given table
 const checkDupEntry = async (entry, tableName) => {
@@ -35,6 +74,8 @@ const checkDupEntry = async (entry, tableName) => {
                 throw new Error("The entry does not have the book identifier: title");
             }
             duplicates = await pool.query(query, [entry.title]);
+
+            // We need to check whether the book was written by the same person or not
             // if(duplicates.rows.length > 0){
 
             // }
@@ -123,5 +164,7 @@ module.exports = {
     checkDupEntry,
     createUpdateQuery,
     createInsertQuery,
-    resetTable
+    resetTable,
+    getBookAuthor,
+    checkAuthorPresence
 }
