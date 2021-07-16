@@ -17,7 +17,7 @@ const postAuthor = async (req, res) => {
         const {query, values} = createInsertQuery("authors", req.body);
         
         const newAuthor = await pool.query(query, values);
-        res.status(200).json(newAuthor);
+        res.status(200).json(newAuthor.rows[0]);
 
     }catch(err){
         res.status(400).json(err.message);
@@ -38,13 +38,12 @@ const getAllAuthors = async (req, res) => {
 const getAuthor = async (req, res) => {
     const { id } = req.params;
     try{
-        var author = await pool.query("SELECT * FROM authors WHERE author_id = ($1)", [id]);
+        var author = await pool.query("SELECT * FROM authors WHERE id = ($1)", [id]);
         if(author.rows.length == 0){
-            throw new Error(`Book with id = ${id} not found`);
+            throw new Error(`author with id = ${id} not found`);
         }
         res.status(200).json(author.rows[0]);
     }catch(err){
-        console.error(err.message);
         res.status(400).json(err.message);
     }
 }
@@ -54,7 +53,7 @@ const updateAuthor = async (req, res) => {
     const { id } = req.params;
     try{
         // Must make sure that req body is proper
-        const { query, values } = createUpdateQuery("authors", {author_id: id}, req.body);
+        const { query, values } = createUpdateQuery("authors", {id: id}, req.body);
         updatedEntry = await pool.query(query, values);
         res.status(200).json(updatedEntry.rows[0]);
     }catch(err){

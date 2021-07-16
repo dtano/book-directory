@@ -14,7 +14,7 @@ CREATE TABLE books(
 -- Must be a many to many relationship
 CREATE TABLE authors(
     id SERIAL PRIMARY KEY,
-    given_names VARCHAR(255) NOT NULL,
+    given_names VARCHAR(255),
     surname VARCHAR(255) NOT NULL,
     country VARCHAR(255),
     bio TEXT,
@@ -32,4 +32,8 @@ ALTER TABLE books
 ALTER COLUMN author SET NOT NULL;
 
 -- given a book id, find out its author
-SELECT a.given_names, a.surname FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = 1; 
+SELECT id FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = 1; 
+
+INSERT INTO book_author (author_id, book_id) VALUES();
+
+SELECT * FROM authors WHERE id = $1

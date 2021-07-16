@@ -12,148 +12,254 @@ beforeAll(async() => {
         title TEXT NOT NULL,
         pages INTEGER,
         date_published DATE
-    )`)
+    )`);
+
+    // Need to create author and book_author tables as well
+    await pool.query(`CREATE TABLE authors(
+        id SERIAL PRIMARY KEY,
+        given_names VARCHAR(255),
+        surname VARCHAR(255) NOT NULL,
+        country VARCHAR(255),
+        bio TEXT,
+        profile_picture VARCHAR(256)
+    )`);
+
+    await pool.query(`CREATE TABLE book_author(
+        author_id INTEGER REFERENCES authors(id) ON DELETE CASCADE,
+        book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+        constraint id PRIMARY KEY (book_id, author_id)
+    )`);
 })
 afterAll(async () => {
     // Delete table
-    await pool.query(`DROP TABLE ${tableName}`)
+    await pool.query(`DROP TABLE ${tableName}, authors, book_author`);
 });
 
-// This book_id will be used to test the update and delete queries
-let book_id;
-// Dates are off, need to check
-describe("Book post route", () => {
-    it("Should create a new book entry", async () => {
-        const response = await request(app).post("/api/book").send({
-            title: "Norwegian Wood",
-            pages: 450,
-            date_published: "1989-03-22"
+const author_ids = []
+describe("Create and get author entry", () => {
+    it("Should create a new author entry", async () => {
+        const response = await request(app).post("/api/author").send({
+            given_names: "Haruki",
+            surname: "Murakami",
+            country: "Japan",
         });
         expect(response.statusCode).toBe(200);
+        author_ids.push(response.body.id);
     });
 
-    it("Prevent duplicate book from being created", async () => {
-        const response = await request(app).post("/api/book").send({
-            title: "Norwegian Wood",
-            pages: 450,
-            date_published: "1989-03-22"
+    it("Should fail to create a duplicate author entry with the same name and country", async () =>{
+        const response = await request(app).post("/api/author").send({
+            given_names: "Haruki",
+            surname: "Murakami",
+            country: "Japan",
         });
         expect(response.statusCode).toBe(400);
     });
 
-    it("Allow duplicate titles, but different author", async () => {
-        const response = await request(app).post("/api/book").send({
-            title: "Norwegian Wood",
-            pages: 200,
-            date_published: "1975-01-01"
-        });
-        expect(response.statusCode).toBe(200);
-        book_id = response.body.rows[0].book_id;
-    });
-
-    it("Prevent from posting a book entry with the wrong properties", async () => {
-        const response = await request(app).post("/api/book").send({
-            name: "Illegal entry",
-            pages: 200,
-            date_published: "1975-01-01"
+    it("Should fail to create an author entry with no surname", async () => {
+        const response = await request(app).post("/api/author").send({
+            given_names: "Darnell",
+            country: "USA",
         });
         expect(response.statusCode).toBe(400);
-        expect(response.body).toBeDefined();
     });
-});
 
-describe("Get book route", () => {
-    it("Should successfully get the right entry", async () => {
-        const response = await request(app).get(`/api/book/${book_id}`);
+    it("Should successfully get the author based on the given id", async () => {
+        const response = await request(app).get(`/api/author/${author_ids[0]}`);
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "id": 2,
-            "date_published": "1975-01-01",
-            "pages": 200,
-            "title": "Norwegian Wood",
+            "id": 1,
+            "given_names": "Haruki",
+            "surname": "Murakami",
+            "country": "Japan",
+            "bio": null,
+            "profile_picture": null
         });
     });
 
-    it("Should fail to get a book with a non-existent id", async () => {
-        const response = await request(app).get(`/api/book/100`);
+    it("Should fail to get an author with a non-existent id", async () => {
+        const response = await request(app).get(`/api/author/100`);
         expect(response.statusCode).toBe(400);
         expect(response.body).toBeDefined();
     });
 
-    it("Should get all book entries", async () => {
-        const response = await request(app).get(`/api/book`);
-        expect(response.statusCode).toBe(200);
-        // 2 is the number of entries that were created prior to this test
-        expect(response.body.length).toBe(2);
-    });
+    it("Should get all authors in the database", async () => {
+        // Make a new author first
+        const createResponse = await request(app).post("/api/author").send({
+            given_names: "Yukio",
+            surname: "Mishima",
+            country: "Japan",
+        });
+        author_ids.push(createResponse.body.id);
+
+        // Then call the get all route
+        const response = await request(app).get("/api/author");
+        expect(response.body.length).toBe(author_ids.length);
+    })
 });
 
-// Make sure user can't change their id
-describe("Update book route", () => {
-    it("Change the title", async () => {
-        const response = await request(app).put(`/api/book/${book_id}`).send({
-            title: "New Title"
+describe("Update author general information and delete author", () => {
+    it("Should update the country and given name of an author", async () => {
+        const response = await request(app).put(`/api/author/${author_ids[0]}`).send({
+            country: "China",
+            given_names: "Dwight",
         });
+
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "book_id": 2,
-            "date_published": "1975-01-01",
-            "pages": 200,
-            "title": "New Title",
+            "id": 1,
+            "given_names": "Dwight",
+            "surname": "Murakami",
+            "country": "China",
+            "bio": null,
+            "profile_picture": null
         });
     });
 
-    it("Change multiple properties (author, pages and date)", async () => {
-        const response = await request(app).put(`/api/book/${book_id}`).send({
-            pages: 300,
-            date_published: "1985-04-03"
+    it("Give wrong properties to update", async () => {
+        const response = await request(app).put(`/api/author/${author_ids[0]}`).send({
+            base: "Chicago"
         });
-        expect(response.statusCode).toBe(200);
-        expect(response.body).toStrictEqual({
-            "book_id": 2,
-            "date_published": "1985-04-03",
-            "pages": 300,
-            "title": "New Title",
-        });
-    });
 
-    it("Should fail to update if at least one of the properties is wrong", async () => {
-        // need to check whether author is changed or not
-        const response = await request(app).put(`/api/book/${book_id}`).send({
-            title: "Aussie Rules",
-            country: "Australia",
-        });
         expect(response.statusCode).toBe(400);
-        expect(response.body).toBeDefined();
     });
+})
 
-    it("Should not process an update when body is empty", async () => {
-        const response = await request(app).put(`/api/book/${book_id}`).send({});
-        expect(response.statusCode).toBe(400);
-        expect(response.body).toBeDefined();
-    });
-});
+// // This book_id will be used to test the update and delete queries
+// let book_id;
+// // Dates are off, need to check
+// describe("Book post route", () => {
+//     it("Should create a new book entry", async () => {
+//         const response = await request(app).post("/api/book").send({
+//             title: "Norwegian Wood",
+//             pages: 450,
+//             date_published: "1989-03-22"
+//         });
+//         expect(response.statusCode).toBe(200);
+//     });
 
-describe("Delete book route", () => {
-    it("Successfully delete multiple entries", async () => {
-        const response = await request(app).delete(`/api/book/multiple`).send({
-            deleteIDs: [1, 2]
-        });
-        expect(response.statusCode).toBe(200);
-        expect(response.body.length).toBe(2);
-    });
+//     it("Prevent duplicate book from being created", async () => {
+//         const response = await request(app).post("/api/book").send({
+//             title: "Norwegian Wood",
+//             pages: 450,
+//             date_published: "1989-03-22"
+//         });
+//         expect(response.statusCode).toBe(400);
+//     });
 
-    it("Fails to delete an entry with a non-existent ID", async () => {
-        const response = await request(app).delete(`/api/book/multiple`).send({
-            deleteIDs: [1]
-        });
-        expect(response.statusCode).toBe(400);
-        expect(response.body).toBeDefined();
-    });
+//     it("Allow duplicate titles, but different author", async () => {
+//         const response = await request(app).post("/api/book").send({
+//             title: "Norwegian Wood",
+//             pages: 200,
+//             date_published: "1975-01-01"
+//         });
+//         expect(response.statusCode).toBe(200);
+//         book_id = response.body.rows[0].book_id;
+//     });
 
-    it("Does not proceed with deleting when body is empty", async () => {
-        const response = await request(app).delete(`/api/book/multiple`).send({});
-        expect(response.statusCode).toBe(400);
-        expect(response.body).toBeDefined();
-    });
-});
+//     it("Prevent from posting a book entry with the wrong properties", async () => {
+//         const response = await request(app).post("/api/book").send({
+//             name: "Illegal entry",
+//             pages: 200,
+//             date_published: "1975-01-01"
+//         });
+//         expect(response.statusCode).toBe(400);
+//         expect(response.body).toBeDefined();
+//     });
+// });
+
+// describe("Get book route", () => {
+//     it("Should successfully get the right entry", async () => {
+//         const response = await request(app).get(`/api/book/${book_id}`);
+//         expect(response.statusCode).toBe(200);
+//         expect(response.body).toStrictEqual({
+//             "id": 2,
+//             "date_published": "1975-01-01",
+//             "pages": 200,
+//             "title": "Norwegian Wood",
+//         });
+//     });
+
+//     it("Should fail to get a book with a non-existent id", async () => {
+//         const response = await request(app).get(`/api/book/100`);
+//         expect(response.statusCode).toBe(400);
+//         expect(response.body).toBeDefined();
+//     });
+
+//     it("Should get all book entries", async () => {
+//         const response = await request(app).get(`/api/book`);
+//         expect(response.statusCode).toBe(200);
+//         // 2 is the number of entries that were created prior to this test
+//         expect(response.body.length).toBe(2);
+//     });
+// });
+
+// // Make sure user can't change their id
+// describe("Update book route", () => {
+//     it("Change the title", async () => {
+//         const response = await request(app).put(`/api/book/${book_id}`).send({
+//             title: "New Title"
+//         });
+//         expect(response.statusCode).toBe(200);
+//         expect(response.body).toStrictEqual({
+//             "book_id": 2,
+//             "date_published": "1975-01-01",
+//             "pages": 200,
+//             "title": "New Title",
+//         });
+//     });
+
+//     it("Change multiple properties (author, pages and date)", async () => {
+//         const response = await request(app).put(`/api/book/${book_id}`).send({
+//             pages: 300,
+//             date_published: "1985-04-03"
+//         });
+//         expect(response.statusCode).toBe(200);
+//         expect(response.body).toStrictEqual({
+//             "book_id": 2,
+//             "date_published": "1985-04-03",
+//             "pages": 300,
+//             "title": "New Title",
+//         });
+//     });
+
+//     it("Should fail to update if at least one of the properties is wrong", async () => {
+//         // need to check whether author is changed or not
+//         const response = await request(app).put(`/api/book/${book_id}`).send({
+//             title: "Aussie Rules",
+//             country: "Australia",
+//         });
+//         expect(response.statusCode).toBe(400);
+//         expect(response.body).toBeDefined();
+//     });
+
+//     it("Should not process an update when body is empty", async () => {
+//         const response = await request(app).put(`/api/book/${book_id}`).send({});
+//         expect(response.statusCode).toBe(400);
+//         expect(response.body).toBeDefined();
+//     });
+// });
+
+// describe("Delete book route", () => {
+//     it("Successfully delete multiple entries", async () => {
+//         const response = await request(app).delete(`/api/book/multiple`).send({
+//             deleteIDs: [1, 2]
+//         });
+//         expect(response.statusCode).toBe(200);
+//         expect(response.body.length).toBe(2);
+//     });
+
+//     it("Fails to delete an entry with a non-existent ID", async () => {
+//         const response = await request(app).delete(`/api/book/multiple`).send({
+//             deleteIDs: [1]
+//         });
+//         expect(response.statusCode).toBe(400);
+//         expect(response.body).toBeDefined();
+//     });
+
+//     it("Does not proceed with deleting when body is empty", async () => {
+//         const response = await request(app).delete(`/api/book/multiple`).send({});
+//         expect(response.statusCode).toBe(400);
+//         expect(response.body).toBeDefined();
+//     });
+// });

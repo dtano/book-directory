@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {postAuthor, getAllAuthors, getAuthor, deleteAuthor} = require("../Controllers/authorController");
+const {postAuthor, getAllAuthors, getAuthor, deleteAuthor, updateAuthor} = require("../Controllers/authorController");
 
 // Post author
 router.post("/", async (req, res) => {
@@ -23,11 +23,7 @@ router.delete("/:id", async (req, res) => {
 
 // Update author
 router.put("/:id", async(req, res) => {
-    try{
-
-    }catch(err){
-
-    }
+    await updateAuthor(req, res);
 });
 
 module.exports = router;
