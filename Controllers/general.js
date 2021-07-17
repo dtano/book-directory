@@ -25,6 +25,7 @@ const checkDupBook = async (book, duplicates) => {
             for(const author of authors){
                 idArr.push(author.id);
             }
+            
             // Now we need to know whether book.author_ids is equal to authors, so we'll need a set
             const authorSet = new Set(book.author_ids + idArr);
             if(authorSet.size === book.author_ids.length){
@@ -33,6 +34,7 @@ const checkDupBook = async (book, duplicates) => {
             }
         }
     }
+    
     return false;
 }
 
@@ -75,10 +77,7 @@ const checkDupEntry = async (entry, tableName) => {
             }
             duplicates = await pool.query(query, [entry.title]);
 
-            // We need to check whether the book was written by the same person or not
-            // if(duplicates.rows.length > 0){
-
-            // }
+            
             return checkDupBook(entry, duplicates);
         case "authors":
             // If an author has the same name and country of origin, then i have no idea
@@ -90,6 +89,7 @@ const checkDupEntry = async (entry, tableName) => {
             }
             break;
     }
+    
     return false;
 }
 

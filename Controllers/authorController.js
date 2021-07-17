@@ -65,7 +65,7 @@ const updateAuthor = async (req, res) => {
 const deleteAuthor = async (req, res) => {
     const { id } = req.params;
     try{
-        var deletedEntry = await pool.query("DELETE FROM authors WHERE author_id = ($1) RETURNING *", [id]);
+        var deletedEntry = await pool.query("DELETE FROM authors WHERE id = ($1) RETURNING *", [id]);
         if (deletedEntry.rows.length == 0){
             throw new Error(`There is possibly no entry with id = ${id}`);
         }

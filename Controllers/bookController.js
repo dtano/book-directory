@@ -19,12 +19,12 @@ const postBook = async (req, res) => {
         }
 
         // This assumes that author_id is an array of IDs
-        if(!checkAuthorPresence(req.body.author_ids)){
+        if(!(await checkAuthorPresence(req.body.author_ids))){
             throw new Error("At least one of the specified authors does not exist in the database");
         }
 
-        // Need to look for duplicates
-        if(checkDupEntry(req.body, "books")){
+        // // Need to look for duplicates
+        if(await checkDupEntry(req.body, "books")){
             throw new Error("The given entry already exists in the database");
         }
         
@@ -79,7 +79,6 @@ const linkBookToAuthors = async (book_id, author_ids) => {
 
     const query = format('INSERT INTO book_author(author_id, book_id) VALUES %L RETURNING *', values);
     const links = await pool.query(query);
-    console.log(links.rows);
 
     return links;
 }
@@ -92,12 +91,14 @@ const updateBook = async (req, res) => {
             throw new Error("The body is empty");
         }
         
+        // Needs fixing
         // book_author entry needs to be updated as well if author is changed
         const { query, values } = createUpdateQuery("books", {id: id}, req.body);
         const updatedEntry = await pool.query(query, values);
 
         // If the user wants to change the writer then we'll need to get a list of the authors of the book
         if(updatedEntry.rows.length > 0 && req.body.hasOwnProperty("oldAuthorID") && req.body.hasOwnProperty("newAuthorID")){
+            console.log("Start process");
             const authors = await getBookAuthor(updatedEntry.rows[0].id);
             
             // Check whether the new author id is a valid one
@@ -111,7 +112,9 @@ const updateBook = async (req, res) => {
             if(authors.length > 0){
                 for(const author of authors){
                     if(author.id === req.body.oldAuthorID){
+                        console.log("Found author id to change");
                         const {changeAuthorQuery, changeAuthorValues} = createUpdateQuery("book_author", {book_id: id, author_id: req.body.oldAuthorID}, {author_id: req.body.newAuthorID});
+                        console.log(changeAuthorQuery);
                         const authorChange = await pool.query(changeAuthorQuery, changeAuthorValues);
                         console.log("Book's author changed");
                         successfulChange = true;
@@ -128,6 +131,36 @@ const updateBook = async (req, res) => {
         res.status(200).json(updatedEntry.rows[0]);
     }catch(err){
         res.status(400).json(err.message);
+    }
+}
+
+const changeAuthor = async (body, bookID) => {
+    if(body.hasOwnProperty("oldAuthorID") && body.hasOwnProperty("newAuthorID")){
+        const authors = await getBookAuthor(bookID);
+
+        // Check whether the new author id is a valid one
+        if (!(await checkAuthorPresence(body.newAuthorID))){
+            throw new Error("Entry updated, but author can't because the new author id given is not valid");
+        }
+
+        let successfulChange = false; 
+            if(authors.length > 0){
+                for(const author of authors){
+                    if(author.id === body.oldAuthorID){
+                        console.log("Found author id to change");
+                        const {changeAuthorQuery, changeAuthorValues} = createUpdateQuery("book_author", {book_id: id, author_id: body.oldAuthorID}, {author_id: body.newAuthorID});
+                        console.log(changeAuthorQuery);
+                        const authorChange = await pool.query(changeAuthorQuery, changeAuthorValues);
+                        console.log("Book's author changed");
+                        successfulChange = true;
+                        break;
+                    }
+                }
+            }
+
+            if(!successfulChange){
+                throw new Error("Author was not changed because the specified author to change is invalid");
+            }
     }
 }
 
