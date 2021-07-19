@@ -20,17 +20,32 @@ const authorUploadPath = path.join("public", "uploads/authors");
 //         limits: {fileSize: maxSize}
 //     });
 // }
-const coverUpload = multer({
-    dest: coverUploadPath,
-    fileFilter: (req, file, callback) => {
-        callback(null, imageMimeTypes.includes(file.mimetype));
-        // What if we get a file that is not of the correct format?
+const coverImageStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./public/uploads/bookCovers")
     },
-    limits: {fileSize: maxImageSize}
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "--" + file.originalname)
+    },
+})
+const coverUpload = multer({
+    storage: coverImageStorage,
+    limits: {fieldSize: 10 * 1024 * 1024}
 });
+    // destination: (req, file, cb) => {
+    //     cb(null, "./public/uploads/bookCovers")
+    // },
+    // // fileFilter: (req, file, callback) => {
+    // //     callback(null, imageMimeTypes.includes(file.mimetype));
+    // //     // What if we get a file that is not of the correct format?
+    // // },
+    // filename: (req, file, cb) => {
+    //     cb(null, Date.now() + "--" + file.originalname)
+    // },
+    // limits: {fileSize: maxImageSize}
 
 const authorUpload = multer({
-    dest: authorUploadPath,
+    destination: authorUploadPath,
     fileFilter: (req, file, callback) => {
         callback(null, imageMimeTypes.includes(file.mimetype));
         // What if we get a file that is not of the correct format?

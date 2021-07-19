@@ -78,7 +78,7 @@ const checkDupEntry = async (entry, tableName) => {
         case "books":
             query += `WHERE title = $1`;
             //console.log(entry[title]);
-            if(!entry.hasOwnProperty("title")){
+            if(!("title" in entry)){
                 throw new Error("The entry does not have the book identifier: title");
             }
             duplicates = await pool.query(query, [entry.title]);

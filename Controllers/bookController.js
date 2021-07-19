@@ -1,11 +1,7 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
 const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence} = require("./general");
-const path = require("path");
 const format = require("pg-format");
-
-// Where images will be stored in the project directory
-const coverUploadPath = path.join("public", "uploads/bookCovers");
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
@@ -14,7 +10,7 @@ const postBook = async (req, res) => {
             DIFFERENT APPROACH
         */
         // Check if author is specified
-        if(!req.body.hasOwnProperty("author_ids")){
+        if(!("author_ids" in req.body)){
             throw new Error("No author specified");
         }
 
@@ -27,11 +23,15 @@ const postBook = async (req, res) => {
         if(await checkDupEntry(req.body, "books")){
             throw new Error("The given entry already exists in the database");
         }
+
+        // Add the cover image file path to the query body if there is an image attached
+        const coverImgName = req.file != null ? req.file.filename : null;
         
         const queryBody = {
             title: req.body.title,
             pages: req.body.pages,
-            date_published: req.body.date_published
+            date_published: req.body.date_published,
+            cover: coverImgName
         };
         
         // Create an Insert query using the query body
@@ -135,7 +135,7 @@ const changeBookDetails = async (updateBody, bookID) => {
 }
 
 const changeAuthor = async (body, bookID) => {
-    if(body != null && Object.keys(body).length > 0 && body.hasOwnProperty("oldAuthorID") && body.hasOwnProperty("newAuthorID")){
+    if(body != null && Object.keys(body).length > 0 && ("oldAuthorID" in body) && ("newAuthorID" in body)){
         const authors = await getBookAuthor(bookID);
 
         // Check whether the new author id is a valid one
