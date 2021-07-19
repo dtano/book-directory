@@ -20,7 +20,7 @@ const checkDupBook = async (book, duplicates) => {
             // }
 
             // Now we need to see if the author id is the same as the give information
-            const authors = await getBookAuthor(dup);
+            const authors = await getBookAuthor(dup.id);
             const idArr = [];
             for(const author of authors){
                 idArr.push(author.id);
@@ -56,10 +56,16 @@ const checkAuthorPresence = async (author_ids = []) => {
  }
  
  // Returns a list of authors who wrote the book
- const getBookAuthor = async (book) => {
+ const getBookAuthor = async (bookID) => {
      let query = "SELECT a.id, a.given_names, a.surname FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = $1;"
-     const writers = await pool.query(query, [book.id]);
- 
+     const writers = await pool.query(query, [bookID]);
+    
+    //  console.log(book.id);
+    //  console.log("Writer list");
+    //  console.log(writers.rows.length);
+
+    //  book_author = await pool.query("SELECT * FROM book_author");
+    //  console.log(book_author.rows);
      return writers.rows;
  }
 
@@ -127,6 +133,8 @@ const createUpdateQuery = (tableName, conditions = {}, data = {}) => {
     Object.keys(conditions).forEach(key => {
         values.push(conditions[key]);
     });
+    
+
 
     return {query, values};
 }
