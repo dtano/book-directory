@@ -7,7 +7,7 @@ const { captureRejectionSymbol } = require("events");
 const { coverUpload } = require("../Middleware/upload");
 
 const router = express.Router();
-const {postBook, getAllBooks, updateBook, deleteBook, deleteMultipleBooks, getBook} = require("../Controllers/bookController");
+const {postBook, getAllBooks, updateBook, deleteBook, deleteMultipleBooks, getBook, uploadCoverImage} = require("../Controllers/bookController");
 
 // Adds a book to the database (A json file at the moment)
 router.post("/", coverUpload.single("cover"), async (req, res) => {
@@ -24,6 +24,10 @@ router.get("/", async (req, res) => {
 router.get("/example", coverUpload.single("cover"), async (req, res) => {
     console.log(req.body);
     res.send("Yahallo");
+});
+
+router.put("/cover/:id", coverUpload.single("cover"), async (req, res) => {
+    await uploadCoverImage(req, res);
 })
 
 // Updates the specified entry

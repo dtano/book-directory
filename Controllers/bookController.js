@@ -104,6 +104,21 @@ const updateBook = async (req, res) => {
         // const { query, values } = createUpdateQuery("books", {id: id}, req.body);
         // const updatedEntry = await pool.query(query, values);
 
+        // Check if there's a new image sent in the request
+        if(req.file != null){
+            // Get entry to update
+            var book = await pool.query("SELECT * FROM books WHERE id = ($1)", [id]);
+            if(book.rows.length == 0){
+                throw new Error(`Book with id = ${id} not found`);
+            }
+
+            // Delete old picture
+            deleteFile(`${bookCoverPath}${book.rows[0].cover}`);
+            
+            // Gotta change the book's cover image with the new filepath
+            req.body.bookChanges.cover = req.file.filename;
+        }
+
         // Update the general details of the book
         let updatedEntry = null;
         let successfulUpdate = false;
@@ -127,6 +142,10 @@ const updateBook = async (req, res) => {
             res.status(400).json("The request body contains the wrong keys");
         }
     }catch(err){
+        // If update was unsuccessful, then we'll need to delete any uploaded file
+        if(req.file != null){
+            deleteFile(`${bookCoverPath}${req.file.filename}`);
+        }
         res.status(400).json(err.message);
     }
 }
@@ -261,9 +280,33 @@ const getAllBooks = async (req, res) => {
     }
 }
 
-const uploadCoverImage = async (fileName) => {
-    if(fileName === null){
-        throw new Error("No file given");
+// Attaches new cover image name to the specified book
+const uploadCoverImage = async (req, res) => {
+    const { id } = req.params;
+    try{
+        // Get the book in question
+        var book = await pool.query("SELECT * FROM books WHERE id = ($1)", [id]);
+        if(book.rows.length == 0){
+            throw new Error(`Book with id = ${id} not found`);
+        }
+        
+        // Update the book with the new cover image
+        const newCover = req.file != null ? req.file.filename : null;
+
+        const { query, values } = createUpdateQuery("books", {id: id}, {cover: newCover});
+        const updatedEntry = await pool.query(query, values);
+
+        if(updatedEntry.rows.length == 0){
+            throw new Error("Failed to update the cover image of this book " + id);
+        }
+
+        // Delete old cover image
+        if(book.rows[0].cover != null) deleteFile(`${bookCoverPath}${book.rows[0].cover}`);
+
+        res.status(200).json(updatedEntry.rows[0]);
+    }catch(err){
+        deleteFile(`${bookCoverPath}${req.file.filename}`);
+        res.status(400).json(err.message);
     }
 }
 
@@ -273,5 +316,6 @@ module.exports = {
     deleteBook,
     deleteMultipleBooks,
     getBook,
-    getAllBooks
+    getAllBooks,
+    uploadCoverImage
 }
