@@ -38,9 +38,9 @@ const coverUpload = multer({
 
 const authorUpload = multer({
     storage: authorProfilePicStorage,
-    fileFilter: (req, file, cb) => {
-        cb(null, imageMimeTypes.includes(file.mimetype));
-    },
+    // fileFilter: (req, file, cb) => {
+    //     cb(null, imageMimeTypes.includes(file.mimetype));
+    // },
     limits: {fieldSize: maxImageSize}
 });
 module.exports = {

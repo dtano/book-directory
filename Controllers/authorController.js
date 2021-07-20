@@ -1,9 +1,10 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
-const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries} = require("./general");
+const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, deleteFile} = require("./general");
 const path = require("path");
 // Where images will be stored in the project directory
-const authorUploadPath = path.join("public", "uploads/authors");
+//const authorUploadPath = path.join("public", "uploads/authors");
+const authorImgPath = "./public/uploads/authors/"
 
 // Create a new author entry
 const postAuthor = async (req, res) => {
@@ -13,13 +14,20 @@ const postAuthor = async (req, res) => {
         if (await checkDupEntry(req.body, "authors")){
             throw new Error("Duplicate author entry");
         }
+
+        // Add the author image file path to the query body if there is an image attached
+        // const imgFileName = req.file != null ? req.file.filename : null;
+        const authorImg = {profile_picture: req.file != null ? req.file.filename : null}
         
-        const {query, values} = createInsertQuery("authors", req.body);
+        const {query, values} = createInsertQuery("authors", {...req.body, ...authorImg});
         
         const newAuthor = await pool.query(query, values);
         res.status(200).json(newAuthor.rows[0]);
 
     }catch(err){
+        if(req.file != null){
+            deleteFile(`${authorImgPath}${req.file.filename}`);
+        }
         res.status(400).json(err.message);
     }
 }
@@ -68,6 +76,10 @@ const deleteAuthor = async (req, res) => {
         var deletedEntry = await pool.query("DELETE FROM authors WHERE id = ($1) RETURNING *", [id]);
         if (deletedEntry.rows.length == 0){
             throw new Error(`There is possibly no entry with id = ${id}`);
+        }
+
+        if(deletedEntry.rows[0].profile_picture != null){
+            deleteFile(`${authorImgPath}${deletedEntry.rows[0].profile_picture}`);
         }
         res.status(200).json(deletedEntry.rows[0]);
     }catch(err){
