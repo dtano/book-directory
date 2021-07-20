@@ -1,7 +1,7 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
 const format = require("pg-format");
-
+const fs = require("fs");
 
 // A extensive strip of a string
 const completeStrip = (str) => {
@@ -166,6 +166,17 @@ const resetTable = async (table_name) => {
     console.log("Table has been truncated");
 }
 
+// Deletes the file specified by the filepath
+const deleteFile = (filepath) => {
+    fs.unlink(filepath, (err) => {
+        if(err){
+            console.log(err);
+        }else{
+            console.log("Successfully deleted file");
+        }
+    });
+}
+
 module.exports = {
     getAllEntries,
     completeStrip,
@@ -174,5 +185,6 @@ module.exports = {
     createInsertQuery,
     resetTable,
     getBookAuthor,
-    checkAuthorPresence
+    checkAuthorPresence,
+    deleteFile
 }

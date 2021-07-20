@@ -1,7 +1,11 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
-const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence} = require("./general");
+const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence, deleteFile} = require("./general");
 const format = require("pg-format");
+
+const fs = require("fs");
+
+const bookCoverPath = "./public/uploads/bookCovers/"
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
@@ -51,6 +55,10 @@ const postBook = async (req, res) => {
         res.status(200).json(newBook.rows[0]);
 
     }catch(err){
+        // If there was an error and the request had a file, then delete it
+        if(req.file != null){
+            deleteFile(`${bookCoverPath}${req.file.filename}`);
+        }
         res.status(400).json(err.message);
     }
 }
@@ -227,6 +235,15 @@ const deleteBook = async (req, res) => {
         if (deletedEntry.rows.length == 0){
             throw new Error(`There is possibly no entry with id = ${id}`);
         }
+
+        // Delete cover image here
+        if(deletedEntry.rows[0].cover != null){
+            // if(!deleteFile(`${bookCoverPath}${deletedEntry.rows[0].cover}`)){
+            //     throw new Error("Failed to delete cover image");
+            // }
+            deleteFile(`${bookCoverPath}${deletedEntry.rows[0].cover}`);
+        }
+
         res.status(200).json(deletedEntry.rows[0]);
     }catch(err){
         res.status(400).json(err.message);

@@ -6,15 +6,13 @@ const crypto = require("crypto");
 const { captureRejectionSymbol } = require("events");
 const { coverUpload } = require("../Middleware/upload");
 
-const multer = require("multer");
-
 const router = express.Router();
 const {postBook, getAllBooks, updateBook, deleteBook, deleteMultipleBooks, getBook} = require("../Controllers/bookController");
 
 // Adds a book to the database (A json file at the moment)
 router.post("/", coverUpload.single("cover"), async (req, res) => {
+    console.log(req.file);
     // Create a new book entry
-    //req.body = JSON.parse(JSON.stringify(req.body));
     await postBook(req, res);
 });
 
@@ -22,6 +20,11 @@ router.post("/", coverUpload.single("cover"), async (req, res) => {
 router.get("/", async (req, res) => {
     await getAllBooks(req, res);
 });
+
+router.get("/example", coverUpload.single("cover"), async (req, res) => {
+    console.log(req.body);
+    res.send("Yahallo");
+})
 
 // Updates the specified entry
 router.put("/:id", async (req, res) => {
