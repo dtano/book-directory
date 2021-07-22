@@ -21,10 +21,17 @@ router.get("/", async (req, res) => {
     await getAllBooks(req, res);
 });
 
-router.get("/example", coverUpload.single("cover"), async (req, res) => {
-    console.log(req.body);
-    res.send("Yahallo");
-});
+router.get("/example", coverUpload.single("cover"), (req, res) => {
+    var bookChanges = JSON.parse(req.body.bookChanges);
+    
+    if(req.file != null){
+        bookChanges.cover = req.file.filename;
+    }
+
+    console.log(bookChanges);
+
+    res.json("Kiss me more");
+})
 
 router.put("/cover/:id", coverUpload.single("cover"), async (req, res) => {
     await uploadCoverImage(req, res);
@@ -49,6 +56,13 @@ router.delete("/multiple", async (req, res) => {
 router.delete("/:id", async (req, res) => {
     await deleteBook(req, res);
 });
+
+// router.get("/example", (req, res) => {
+//     let allData = JSON.parse(fs.readFileSync("Routes/movies.json"));
+
+//     console.log(allData);
+//     res.json("Inshallah");
+// })
 
 // const exampleStorage = multer.diskStorage({
 //     destination: (req, file, cb) => {
