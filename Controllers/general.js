@@ -168,13 +168,27 @@ const resetTable = async (table_name) => {
 
 // Deletes the file specified by the filepath
 const deleteFile = (filepath) => {
-    fs.unlink(filepath, (err) => {
-        if(err){
-            console.log(err);
-        }else{
-            console.log("Successfully deleted file");
-        }
-    });
+    if(filepath != null){
+        fs.unlink(filepath, (err) => {
+            if(err){
+                console.log(err);
+            }else{
+                console.log("Successfully deleted file");
+            }
+        });
+    }
+}
+
+// Checks whether all values in b exist in a
+const checkArrayContent = (a = [], b = []) => {
+    const set = new Set([...a, ...b]);
+    return set.size === a.length;
+}
+
+// Checks whether both arrays given contain all unique values
+const checkUniqueness = (a = [], b = []) => {
+    const set = new Set([...a, ...b]);
+    return set.size === (a.length + b.length);
 }
 
 module.exports = {
@@ -186,5 +200,7 @@ module.exports = {
     resetTable,
     getBookAuthor,
     checkAuthorPresence,
+    checkArrayContent,
+    checkUniqueness,
     deleteFile
 }

@@ -2,7 +2,7 @@ const multer = require("multer");
 const path = require("path");
 
 // What types of files are accepted
-const imageMimeTypes = ["images/jpeg", "images/png"];
+const imageMimeTypes = ["image/jpeg", "image/png"];
 const maxImageSize = 10 * 1024 * 1024;
 
 // Where images will be stored in the project directory
@@ -30,9 +30,13 @@ const authorProfilePicStorage = multer.diskStorage({
 
 const coverUpload = multer({
     storage: coverImageStorage,
-    // fileFilter: (req, file, cb) => {
-    //     cb(null, imageMimeTypes.includes(file.mimetype));
-    // },
+    fileFilter: (req, file, cb) => {
+        if(!imageMimeTypes.includes(file.mimetype)){
+            req.fileValidationError = `Only image files allowed. Given file is of type ${file.mimetype}`;
+            return cb(null, false, new Error(req.fileValidationError));
+        }
+        cb(null, true);
+    },
     limits: {fieldSize: maxImageSize}
 });
 

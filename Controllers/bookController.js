@@ -1,6 +1,6 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
-const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence, deleteFile} = require("./general");
+const {checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence, deleteFile} = require("./general");
 const format = require("pg-format");
 
 const fs = require("fs");
@@ -63,20 +63,11 @@ const postBook = async (req, res) => {
     }
 }
 
-// Creates an entry that links the book to the author
-const linkBookToAuthor = async (book_id, author_id) => {
-    // Create an entry in the book_author table
-    const {query, values} = createInsertQuery("book_author", {author_id: author_id, book_id: book_id});
-    const link = await pool.query(query, values);
-
-    return link;
-}
-
 // Use this to link multiple authors to a book
 const linkBookToAuthors = async (book_id, author_ids) => {
     // Now we need to make nested array that contains book_id and author_ids
-    if(author_ids.length == 0){
-        throw new Error("No authors specified");
+    if(author_ids.length === 0){
+        return {};
     }
     
     let values = [];
@@ -91,6 +82,18 @@ const linkBookToAuthors = async (book_id, author_ids) => {
     return links;
 }
 
+// Remove one or more authors from the given book
+const removeAuthorsFromBook = async (bookID, authorsToRemove) => {
+    if(authorsToRemove.length === 0){
+        return {};
+    }
+    
+    let query = format(`DELETE FROM book_author WHERE book_id = ${bookID} AND author_id IN (%L) RETURNING *`, authorsToRemove);
+    const removed = await pool.query(query, []);
+
+    return removed
+}
+
 // Update book entry with the values in the request body
 const updateBook = async (req, res) => {
     const { id } = req.params;
@@ -99,13 +102,9 @@ const updateBook = async (req, res) => {
             throw new Error("The body is empty");
         }
         
-        // Needs fixing
-        // book_author entry needs to be updated as well if author is changed
-        // const { query, values } = createUpdateQuery("books", {id: id}, req.body);
-        // const updatedEntry = await pool.query(query, values);
-
-        var bookChanges = JSON.parse(req.body.bookChanges);
-        var authorChange = JSON.parse(req.body.authorChange);
+        console.log("pre parse");
+        var bookChanges = req.body.bookChanges != null ? JSON.parse(req.body.bookChanges) : null;
+        var authorChange = req.body.authorChange != null ? JSON.parse(req.body.authorChange) : null;
 
         if(bookChanges == null && authorChange == null){
             throw new Error("The request body is not of the correct format");
@@ -136,8 +135,9 @@ const updateBook = async (req, res) => {
         }
 
         if(authorChange != null){
+            console.log("author change time");
             // Update the author if the body specified it
-            await changeAuthor(authorChange, id);
+            await changeAuthor(id, authorChange.authorsToRemove, authorChange.authorsToAdd);
             //console.log("Author changed");
             successfulUpdate = true;
         }
@@ -157,6 +157,7 @@ const updateBook = async (req, res) => {
     }
 }
 
+// Updates the specified book's general details (basically all details except the author)
 const changeBookDetails = async (updateBody, bookID) => {
     if(Object.keys(updateBody).length === 0){
         throw new Error("No details to change are specified");
@@ -168,37 +169,49 @@ const changeBookDetails = async (updateBody, bookID) => {
     return updatedEntry.rows
 }
 
-const changeAuthor = async (body, bookID) => {
-    if(body != null && Object.keys(body).length > 0 && ("oldAuthorID" in body) && ("newAuthorID" in body)){
-        const authors = await getBookAuthor(bookID);
-
-        // Check whether the new author id is a valid one
-        if (!(await checkAuthorPresence([body.newAuthorID]))){
-            throw new Error("Entry updated, but author can't because the new author id given is not valid");
-        }
+// A function that allows changing the author(s) of a book
+const changeAuthor = async (bookID, authorsToRemove = [], authorsToAdd = []) => {
+    // Get the book in question
+    const bookToUpdate = await pool.query("SELECT * FROM books WHERE id = ($1)", [bookID]);
+    if(bookToUpdate.rows.length == 0){
+        throw new Error(`Book with id = ${bookID} not found`);
+    };
+    
+    // Get the author(s) of the book
+    const bookAuthors = await getBookAuthor(bookID);
+    const bookAuthorIDs = bookAuthors.map((author) => author.id);
+    
+    // Checks whether all ids in authorsToRemove is present in the array of authors for this book
+    if(authorsToRemove.length > 0 && !checkArrayContent(bookAuthorIDs, authorsToRemove)){
+        throw new Error("Invalid author ids to remove");
+    }
+    
+    // Verify whether the author ids to add are authors that exist in the database
+    if(authorsToAdd.length > 0){
+        // Look for the author in the authors table using their id
+        var authorValid = await checkAuthorPresence(authorsToAdd);
+        console.log(authorValid);
+        // Make sure that none of the authors are already credited with writing this book
         
-        let successfulChange = false; 
-        if(authors.length > 0){
-            for(const author of authors){
-                if(author.id === body.oldAuthorID){
-                    //console.log("Found author id to change");
-
-                    // Create update query for changing the entry in the book_author table
-                    const {query, values} = createUpdateQuery("book_author", {book_id: bookID, author_id: body.oldAuthorID}, {author_id: body.newAuthorID});
-                    
-                    const authorChange = await pool.query(query, values);
-                    //console.log("Book's author changed");
-                    successfulChange = true;
-                    break;
-                }
-            }
+        if(!authorValid){
+            throw new Error("At least one of the authors to add don't exist in the database");
         }
 
-        if(!successfulChange){
-            throw new Error("Author was not changed because the specified author to change is invalid");
+        // If at least one of the given authors to add has been credited with writing this book, then you can't add these authors
+        if(!checkUniqueness(bookAuthorIDs, authorsToAdd)){
+            throw new Error("At least one of the authors is already credited with writing this book");
         }
-    }else{
-        throw new Error("No author IDs given for updating");
+    }
+
+    // Delete corresponding book_author entry
+    const removed = await removeAuthorsFromBook(bookID, authorsToRemove);
+    
+    // Create new entries in the book_author table
+    const added = await linkBookToAuthors(bookID, authorsToAdd);
+
+    return {
+        removed: removed.rows,
+        added: added.rows
     }
 }
 
@@ -213,54 +226,10 @@ const changeAuthor = async (body, bookID) => {
 const updateBookAuthor = async (req, res) => {
     const { id } = req.params;
     try{
-        // Get the book in question
-        const bookToUpdate = await pool.query("SELECT * FROM books WHERE id = ($1)", [id]);
-        // Get the author(s) of the book
-        if(bookToUpdate.rows.length == 0){
-            throw new Error(`Book with id = ${id} not found`);
-        };
-        const bookAuthors = await getBookAuthor(id);
-        
-        // Verify whether the author ids in the author_ids to remove is valid for this book (meaning the author to delete was previously credited as a writer for this book)
-        if(req.body.authorsToRemove.length > 0){
-            // Get all ids from bookAuthors and add them to a set alongside the authorsToRemove array
-            const bookAuthorIDs = bookAuthors.map((author) => author.id);
-            const authorIDSet = new Set([...bookAuthorIDs, ...req.body.authorsToRemove]);
-
-            // Check whether the size of the set is equal to the length of the bookAuthorIDs
-            if(authorIDSet.size != bookAuthorIDs.length) throw new Error("Invalid author ids to remove");
-        }
-        
-        // Verify whether the author ids to add are authors that exist in the database
-        if(req.body.authorsToAdd.length > 0){
-            // Look for the author in the authors table using their id
-            let allFound = true;
-            req.body.authorsToAdd.forEach((authorID) => {
-                var author = await pool.query("SELECT * FROM authors WHERE id = ($1)", [authorID]);
-                if(author.rows.length == 0){
-                    allFound = false;
-                    break;
-                }
-            });
-
-            if(!allFound){
-                throw new Error("At least one of the authors to add don't exist in the database");
-            }
-        }
-        
-        
-        // Delete corresponding book_author entry
-        let query = `DELETE FROM book_author WHERE book_id = ${id} AND author_id IN (${req.body.authorsToRemove}) RETURNING *`;
-        const removed = await pool.query(query, []);
-        
-        // Create new entries in the book_author table
-        const added = await linkBookToAuthors(id, req.body.authorsToAdd);
+        const updatedBook = await changeAuthor(id, req.body.authorsToRemove, req.body.authorsToAdd);
 
         // Send to response
-        res.status(200).json({
-            removed: removed.rows,
-            added: added.rows
-        })
+        res.status(200).json(updatedBook);
     }catch(err){
         res.status(400).json(err.message);
     }
@@ -311,7 +280,10 @@ const getBook = async (req, res) => {
         // Find the author
         const authors = await getBookAuthor(book.rows[0].id);
         
-        res.status(200).json(book.rows[0]);
+        res.status(200).json({
+            details: book.rows[0],
+            authors: authors
+        });
     }catch(err){
         //console.error(err.message);
         res.status(400).json(err.message);
