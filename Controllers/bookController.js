@@ -1,6 +1,6 @@
 const express = require("express");
 const {pool, client} = require("../Models/db_setup");
-const {checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence, deleteFile} = require("./general");
+const {checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, getAllBookAuthors, checkAuthorPresence, deleteFile} = require("./general");
 const format = require("pg-format");
 
 const fs = require("fs");
@@ -314,7 +314,18 @@ const deleteBook = async (req, res) => {
 const getAllBooks = async (req, res) => {
     try{
         const allBooks = await getAllEntries("books");
-        res.status(200).json(allBooks);
+
+        // Holds the information in this format: { details: {title: ?, pages: ?}, authors: {id: ?, name: ?}} (something like that)
+        const responseBody = []
+        for(var i = 0; i < allBooks.length; i++){
+            const bookEntry = {};
+            // General book details
+            bookEntry.details = allBooks[i];
+            // Get author(s) of book
+            bookEntry.authors = await getBookAuthor(allBooks[i].id);
+            responseBody.push(bookEntry);
+        }
+        res.status(200).json(responseBody);
     }catch(err){
         res.status(400).json(err.message);
     }
