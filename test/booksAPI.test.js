@@ -11,7 +11,8 @@ beforeAll(async() => {
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         pages INTEGER,
-        date_published DATE
+        date_published DATE,
+        cover VARCHAR(256)
     )`);
 
     // Need to create author and book_author tables as well
@@ -176,8 +177,9 @@ describe("Book post route", () => {
             "date_published": "1989-03-22", 
             "id": 1, 
             "pages": 450, 
-            "title": "Runaway Horses"}
-        );
+            "title": "Runaway Horses",
+            "cover": null
+        });
         book_id = response.body.id;
     });
 
@@ -212,6 +214,7 @@ describe("Book post route", () => {
             "id": 2,
             "pages": 200,
             "title": "Runaway Horses",
+            "cover": null
         });
     });
 
@@ -248,7 +251,8 @@ describe("Book post route", () => {
             "date_published": "1975-01-01", 
             "id": 3, 
             "pages": 500, 
-            "title": "Some random book"
+            "title": "Some random book",
+            "cover": null
         });
     });
 });
@@ -258,10 +262,18 @@ describe("Get book route", () => {
         const response = await request(app).get(`/api/book/${book_id}`);
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "date_published": "1989-03-22", 
-            "id": 1, 
-            "pages": 450, 
-            "title": "Runaway Horses",
+            "details": {
+                "date_published": "1989-03-22", 
+                "id": 1, 
+                "pages": 450, 
+                "title": "Runaway Horses",
+                "cover": null
+            },
+            "authors": [{
+                "given_names": "Yukio",
+                "id": 3,
+                "surname": "Mishima",
+            }]
         });
     });
 
@@ -323,8 +335,8 @@ describe("Update book route", () => {
         
         const response = await request(app).put(`/api/book/${book_id}`).send({
             authorChange: {
-                oldAuthorID: 3,
-                newAuthorID: 4
+                authorsToRemove: [3],
+                authorsToAdd: [4]
             }
         });
         

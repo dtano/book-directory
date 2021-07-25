@@ -102,9 +102,13 @@ const updateBook = async (req, res) => {
             throw new Error("The body is empty");
         }
         
-        console.log("pre parse");
-        var bookChanges = req.body.bookChanges != null ? JSON.parse(req.body.bookChanges) : null;
-        var authorChange = req.body.authorChange != null ? JSON.parse(req.body.authorChange) : null;
+        // Use the one below if cover image uploads is included with the other details
+        //var bookChanges = req.body.bookChanges != null ? JSON.parse(req.body.bookChanges) : null;
+        //var authorChange = req.body.authorChange != null ? JSON.parse(req.body.authorChange) : null;
+
+        // Use this is cover image upload is handled somewhere else
+        var bookChanges = req.body.bookChanges != null ? req.body.bookChanges : null;
+        var authorChange = req.body.authorChange != null ? req.body.authorChange : null;
 
         if(bookChanges == null && authorChange == null){
             throw new Error("The request body is not of the correct format");
@@ -135,7 +139,6 @@ const updateBook = async (req, res) => {
         }
 
         if(authorChange != null){
-            console.log("author change time");
             // Update the author if the body specified it
             await changeAuthor(id, authorChange.authorsToRemove, authorChange.authorsToAdd);
             //console.log("Author changed");
