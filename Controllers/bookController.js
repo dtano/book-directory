@@ -106,7 +106,7 @@ const updateBook = async (req, res) => {
         //var bookChanges = req.body.bookChanges != null ? JSON.parse(req.body.bookChanges) : null;
         //var authorChange = req.body.authorChange != null ? JSON.parse(req.body.authorChange) : null;
 
-        // Use this is cover image upload is handled somewhere else
+        // Use this if cover image upload is handled somewhere else
         var bookChanges = req.body.bookChanges != null ? req.body.bookChanges : null;
         var authorChange = req.body.authorChange != null ? req.body.authorChange : null;
 
@@ -319,6 +319,7 @@ const getAllBooks = async (req, res) => {
         const allBooks = await getAllEntries("books");
 
         // Holds the information in this format: { details: {title: ?, pages: ?}, authors: {id: ?, name: ?}} (something like that)
+        // Bottom might not be necessary, depends on how front end looks
         const responseBody = []
         for(var i = 0; i < allBooks.length; i++){
             const bookEntry = {};
@@ -346,6 +347,7 @@ const uploadCoverImage = async (req, res) => {
         
         // Update the book with the new cover image
         const newCover = req.file != null ? req.file.filename : null;
+        console.log(newCover);
 
         const { query, values } = createUpdateQuery("books", {id: id}, {cover: newCover});
         const updatedEntry = await pool.query(query, values);

@@ -1,6 +1,7 @@
 const request = require("supertest");
 const {pool, client} = require("../Models/db_setup");
 const app = require("../app");
+const fs = require("fs");
 
 const tableName = "books";
 
@@ -79,12 +80,15 @@ describe("Create and get author entry", () => {
         const response = await request(app).get(`/api/author/${author_ids[0]}`);
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual({
-            "id": 1,
-            "given_names": "Haruki",
-            "surname": "Murakami",
-            "country": "Japan",
-            "bio": null,
-            "profile_picture": null
+            "books": [],
+            "details": {
+                "id": 1,
+                "given_names": "Haruki",
+                "surname": "Murakami",
+                "country": "Japan",
+                "bio": null,
+                "profile_picture": null
+            }
         });
 
     });
@@ -370,6 +374,18 @@ describe("Update book route", () => {
         const response = await request(app).put(`/api/book/${book_id}`).send({});
         expect(response.statusCode).toBe(400);
         expect(response.body).toBeDefined();
+    });
+
+    it("Should successfully upload a cover image to a book entry", async () => {
+        const filepath = `${__dirname}/testFiles/test.jpg`;
+        if(!fs.existsSync(filepath)){
+            throw new Error("File does not exist");
+        }
+        const response = await request(app).put(`/api/book/cover/${book_id}`)
+                                        .attach("cover", filepath)
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.cover == null).toBe(false);
     });
 });
 

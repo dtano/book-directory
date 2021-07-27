@@ -2,6 +2,7 @@ const express = require("express");
 const {pool, client} = require("../Models/db_setup");
 const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, deleteFile} = require("./general");
 const path = require("path");
+const { PRIORITY_ABOVE_NORMAL } = require("constants");
 // Where images will be stored in the project directory
 //const authorUploadPath = path.join("public", "uploads/authors");
 const authorImgPath = "./public/uploads/authors/"
@@ -46,11 +47,17 @@ const getAllAuthors = async (req, res) => {
 const getAuthor = async (req, res) => {
     const { id } = req.params;
     try{
+        const responseBody = {};
         var author = await pool.query("SELECT * FROM authors WHERE id = ($1)", [id]);
         if(author.rows.length == 0){
             throw new Error(`author with id = ${id} not found`);
         }
-        res.status(200).json(author.rows[0]);
+        responseBody.details = author.rows[0];
+
+        var writtenBooks = await getAuthorBooks(id);
+        responseBody.books = writtenBooks;
+
+        res.status(200).json(responseBody);
     }catch(err){
         res.status(400).json(err.message);
     }
@@ -60,6 +67,20 @@ const getAuthor = async (req, res) => {
 const updateAuthor = async (req, res) => {
     const { id } = req.params;
     try{
+        if(req.file != null){
+            // Get entry to update
+            var author = await pool.query("SELECT * FROM authors WHERE id = ($1)", [id]);
+            if(author.rows.length == 0){
+                throw new Error(`Author with id = ${id} not found`);
+            }
+
+            // Delete old picture
+            deleteFile(`${authorImgPath}${author.rows[0].cover}`);
+            
+            // Gotta change the book's cover image with the new filepath
+            req.body.cover = req.file.filename;
+        }
+
         // Must make sure that req body is proper
         const { query, values } = createUpdateQuery("authors", {id: id}, req.body);
         updatedEntry = await pool.query(query, values);
@@ -85,6 +106,14 @@ const deleteAuthor = async (req, res) => {
     }catch(err){
         res.status(400).json(err.message);
     }
+}
+
+// Gets all of the books an author has written
+const getAuthorBooks = async (authorID) => {
+    let query = "SELECT b.id, b.title, b.cover FROM book_author ba JOIN books b ON (ba.book_id = b.id) WHERE ba.author_id = $1;"
+    const writtenBooks = await pool.query(query, [authorID]);
+
+    return writtenBooks.rows;
 }
 
 module.exports = {
