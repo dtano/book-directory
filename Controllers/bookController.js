@@ -4,6 +4,7 @@ const {checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, cre
 const format = require("pg-format");
 
 const fs = require("fs");
+const uploadMiddleware = require("../Middleware/upload");
 
 const bookCoverPath = "./public/uploads/bookCovers/"
 

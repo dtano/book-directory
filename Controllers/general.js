@@ -2,6 +2,7 @@ const express = require("express");
 const {pool, client} = require("../Models/db_setup");
 const format = require("pg-format");
 const fs = require("fs");
+const path = require("path");
 
 // A extensive strip of a string
 const completeStrip = (str) => {
@@ -36,6 +37,18 @@ const checkDupBook = async (book, duplicates) => {
     }
     
     return false;
+}
+
+const clearDirectory = (dirName) => {
+    fs.readdir(dirName, (err, files) => {
+        if(err) throw err;
+
+        for(const file of files){
+            fs.unlink(path.join(dirName, file), err => {
+                if(err) throw err;
+            });
+        }
+    });
 }
 
 // Check the presence of an array of authors
@@ -202,5 +215,6 @@ module.exports = {
     checkAuthorPresence,
     checkArrayContent,
     checkUniqueness,
-    deleteFile
+    deleteFile,
+    clearDirectory
 }

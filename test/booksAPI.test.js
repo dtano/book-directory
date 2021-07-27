@@ -1,9 +1,20 @@
 const request = require("supertest");
 const {pool, client} = require("../Models/db_setup");
 const app = require("../app");
-const fs = require("fs");
+const fs = require("fs-extra");
 
 const tableName = "books";
+const {clearDirectory} = require("../Controllers/general");
+
+// Holds the name of the folders that contain uploaded test files
+const uploadDirNames = ["test/testUploads/bookCovers", "test/testUploads/authors"];
+
+const clearDirectories = () => {
+    for(const dir of uploadDirNames){
+        fs.emptyDirSync(dir);
+    }
+}
+
 
 // Clear the books table after and before the tests are executed
 beforeAll(async() => {
@@ -31,10 +42,16 @@ beforeAll(async() => {
         book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
         constraint id PRIMARY KEY (book_id, author_id)
     )`);
+
+    // Clear upload folders just in case
+    clearDirectories();
 })
 afterAll(async () => {
     // Delete table
     await pool.query(`DROP TABLE ${tableName}, authors, book_author`);
+
+    // Clear upload folders
+    clearDirectories();
 });
 
 const author_ids = []
@@ -376,12 +393,13 @@ describe("Update book route", () => {
         expect(response.body).toBeDefined();
     });
 
+    // Need to upload to a separate test folder
     it("Should successfully upload a cover image to a book entry", async () => {
         const filepath = `${__dirname}/testFiles/test.jpg`;
         if(!fs.existsSync(filepath)){
             throw new Error("File does not exist");
         }
-        const response = await request(app).put(`/api/book/cover/${book_id}`)
+        const response = await request(app).put(`/api/book/test/cover/${book_id}`)
                                         .attach("cover", filepath)
 
         expect(response.statusCode).toBe(200);
