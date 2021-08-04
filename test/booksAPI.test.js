@@ -4,11 +4,11 @@ const app = require("../app");
 const fs = require("fs-extra");
 
 const tableName = "books";
-const {clearDirectory} = require("../Controllers/general");
 
 // Holds the name of the folders that contain uploaded test files
 const uploadDirNames = ["test/testUploads/bookCovers", "test/testUploads/authors"];
 
+// Clears the listed directories
 const clearDirectories = () => {
     for(const dir of uploadDirNames){
         fs.emptyDirSync(dir);
