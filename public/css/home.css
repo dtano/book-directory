@@ -12,11 +12,12 @@ a {
     text-decoration: none;
 }
 
+/* Change justify content to flex-end if we want the navbar buttons and login buttons to be on the same side*/
 .navbar {
     background:rgb(50, 163, 255);
     padding: 30px 5%;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     margin: 0;
 }
@@ -24,6 +25,7 @@ a {
 /* .navbuttons{
     flex: 1;
 } */
+
 
 .nav_links{
     margin: 0;
@@ -42,13 +44,28 @@ a {
     color: white;
 }
 
-
-.logo{
-    /* float: left;
-    padding-top: 8px;
-    margin: 0; */
-    margin-right: auto;
+.user-buttons button {
+    /* background-color: rgba(255, 255, 0, 0.938);
+    color: white;
+    font-weight: bold; */
+    font-size: 16px;
+    padding: 5px 12px;
+    display: inline-block;
+    text-align: center;
+    border: none;
+    margin: 2px;
 }
+
+.login-btn {
+    background-color: rgba(255, 255, 0, 0.938);
+    color: white;
+    font-weight: bold;
+}
+
+/* Uncomment below if we want the nav bar buttons to be on the right with the login and register buttons*/
+/* .logo {
+    margin-right: auto;
+} */
 
 .logo a{
     font-weight: bold;
