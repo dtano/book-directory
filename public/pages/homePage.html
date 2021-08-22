@@ -7,64 +7,79 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="../css/home.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+        <script src="https://kit.fontawesome.com/a4be3412c4.js" crossorigin="anonymous"></script>
     </head>
     <body>
+
+        <!-- <div class="searchbar">
+            <input class="search-text" type="text" id="cityName" name="cityName" placeholder="City: Bali,e.g."><br>
+            <a class="search-btn" href="#">
+                <i class="fas fa-search"></i>
+            </a>
+        </div> -->
         <div class="navbar">
             <div class="logo">
                 <a href="http://google.com/">The Travel Group</a>
             </div>
             <div class="navbuttons">
                 <ul class="nav_links">
-                    <!-- <li><a href="http://google.com/" class="logo">The Travel Group</a></li> -->
                     <li><a href="/home/">Home</a></li>
                     <li><a href="/trips/">Trips</a></li>
-                    <li><a href="/contact/">Contact</a></li>
+                    <li><a href="/about/">About</a></li>
                 </ul>
             </div>
             <div class ="user-buttons">
                 <button type="button" class="login-btn">Login</button>
-                <button type="button" class="register-btn">Register</button>
             </div>
+            <input type="checkbox" id="check">
+            <label for="check" class="check-btn">
+                <i class="fas fa-bars"></i>
+            </label>
         </div>
-        
         
         <section class="hero">
             <div class="background">
-                <h2> Plan your next tropical island getaway now</h2>
                 <img class="home-bg" src="https://indonesiaflorestour.com/wp-content/uploads/2019/09/ift-header-02.jpg" alt="Tropical Island" style="width:100%">
-            </div>
-            <div class="searchbar">
-                <h2>Search Bar</h2>
-                <form>
-                    <label for="cityName"> City: Bali, e.g.</label> <br>
-                    <input type="text" id="cityName" name="cityName"><br>
-                </form>
+                <p>Plan your next tropical getaway</p>
+                <div class="searchbar">
+                    <input class="search-text" type="text" id="cityName" name="cityName" placeholder="City: Bali,e.g."><br>
+                    <a class="search-btn" href="#">
+                        <i class="fas fa-search"></i>
+                    </a>
+                </div>
             </div>
         </section>
-
         <section class="popular-dest">
+            <h2> Popular Destinations </h2>
             <div class="container">
-                <ul>
+                <ul class="popular-dest-cards">
                     <li>
-                        <img src="../website-images/bali.jpg" class="city-img" width=300>
-                        <h3 class="city-name">Bali</h3>
-                        <p class="dest-info">
-                            Some information about the city
-                        </p>
+                        <div class="popular-dest-card">
+                            <img src="../website-images/bali.jpg" class="city-img">
+                            <h3 class="city-name">Bali</h3>
+                            <p class="dest-info">
+                                Some information about the city
+                            </p>
+                        </div>
                     </li>
                     <li>
-                        <img src="../website-images/cyprus.jpg" class="city-img" width=300>
-                        <h3 class="city-name">Cyprus</h3>
-                        <p class="dest-info">
-                            Some information about the city
-                        </p>
+                        <div class="popular-dest-card">
+                            <img src="../website-images/cyprus.jpg" class="city-img" width=300>
+                            <h3 class="city-name">Cyprus</h3>
+                            <p class="dest-info">
+                                Some information about the city
+                            </p>
+                        </div>
                     </li>
                     <li>
-                        <img src="../website-images/santorini.jpg" class="city-img" width=300>
-                        <h3 class="city-name">Santorini</h3>
-                        <p class="dest-info">
-                            Some information about the city
-                        </p>
+                        <div class="popular-dest-card">
+                            <img src="../website-images/santorini.jpg" class="city-img">
+                            <h3 class="city-name">Santorini</h3>
+                            <p class="dest-info">
+                                Some information about the city
+                            </p>
+                        </div>
                     </li>
                 </ul>
             </div>

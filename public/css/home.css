@@ -2,6 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: "Poppins";
 }
 
 ul {
@@ -12,12 +13,14 @@ a {
     text-decoration: none;
 }
 
+
+
 /* Change justify content to flex-end if we want the navbar buttons and login buttons to be on the same side*/
 .navbar {
-    background:rgb(50, 163, 255);
-    padding: 30px 5%;
+    background:rgb(34, 123, 240);
+    padding: 28px 2%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin: 0;
 }
@@ -36,12 +39,20 @@ a {
 .nav_links li {
     display: inline-block;
     padding: 0px 20px;
-    font-size: 16px;
 }
 
 .nav_links li a {
+    font-size: 16px;
     text-decoration: none;
     color: white;
+    text-transform: uppercase;
+    border-radius: 3px;
+    padding: 3px 13px;
+}
+
+.nav_links li a:hover{
+    background: rgba(250, 250, 250, 0.87);
+    transition: .5s;
 }
 
 .user-buttons button {
@@ -53,23 +64,213 @@ a {
     display: inline-block;
     text-align: center;
     border: none;
-    margin: 2px;
+    margin: 0px;
 }
 
 .login-btn {
     background-color: rgba(255, 255, 0, 0.938);
     color: white;
     font-weight: bold;
+    border-radius: 3px;
+}
+
+.check-btn{
+    font-size: 30px;
+    color: white;
+    line-height: 80px;
+    margin-right: 20px;
+    cursor: pointer;
+    display: none;
+}
+
+#check{
+    display: none;
 }
 
 /* Uncomment below if we want the nav bar buttons to be on the right with the login and register buttons*/
-/* .logo {
+.logo {
     margin-right: auto;
-} */
+}
 
 .logo a{
     font-weight: bold;
     color: white;
-    font-size: 16px;
+    font-size: 24px;
     text-align: center;
 }
+
+@media (max-width: 952px){
+    .logo a{
+        font-size: 16px;
+        padding-left: 20px;
+    }
+
+    .nav_links li a{
+        font-size: 12px;
+    }
+
+    .user-buttons button{
+        font-size: 12px;
+        padding: 3px 10px;
+    }
+
+    /* .navbar{
+        padding: 20px 1%;
+    } */
+}
+
+@media (max-width: 858px){
+    .check-btn{
+        display: block;
+    }
+
+    .nav_links{
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        background: rgb(47, 66, 92);
+        top: 80px;
+        left: -100%;
+        text-align: center;
+        transition: all .5s;
+    }
+
+    .user-buttons{
+        display: none;
+    }
+
+    .nav_links li{
+        display: block;
+    }
+
+    .nav_links li a{
+        font-size: 20px;
+    }
+
+    #check:checked ~ .nav_links{
+        left: 0;
+    }
+
+}
+.background{
+    position: relative;
+    text-align: center;
+}
+
+.background p {
+    font-size: 32px;
+    font-weight: bold;
+    color: rgb(255, 251, 0);
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+/* body{
+    margin: 0;
+    padding: 0;
+} */
+.searchbar{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 40px;
+    border-radius: 40px;
+    padding: 10px;
+    background: rgb(255, 255, 255);
+    margin-bottom: 10px;
+}
+
+
+.search-text{
+    border: none;
+    background: none;
+    float: left;
+    padding: 0;
+    color: white;
+    font-size: 16px;
+    line-height: 40px;
+    width: 240px;
+}
+
+.popular-dest{
+    padding: 2em 6em;
+    margin-bottom: 3em;
+    align-items: center;
+}
+
+.popular-dest h2{
+    text-align: center;
+    margin-bottom: 2em;
+}
+
+/* .popular-dest.container{
+    text-align: justify;
+    display: inline-block;
+    width: 100%;
+    height: 125px;
+    min-width: 600px;
+    margin: 0px;
+} */
+
+.popular-dest-cards {
+    /* background:rgb(47, 66, 92); */
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.popular-dest-cards li {
+    display: inline-block;
+    /* margin-right: 40px; */
+    margin-right: 2em;
+    /* padding: 0px 0px; */
+    /* background: red; */
+    /* border-radius: 20px;
+    margin-right: 2em; */
+}
+
+.popular-dest-card {
+    display: block;
+    /* padding: 15px; */
+    background: rgb(148, 191, 247);
+    border-radius: 20px;
+    height: 350px;
+}
+
+
+
+.city-name {
+    text-align: center;
+}
+
+.dest-info {
+    text-align: center;
+    padding: 15px 0;
+    /* padding-bottom: 15px; */
+    /* display: block;
+    width: 100%; */
+}
+
+.popular-dest-card img {
+    width: 350px;
+    height: 200px;
+    /* height: 250px; */
+    object-fit: cover;
+    padding: 0;
+    /* margin-left: -1rem;
+    margin-right: -1rem;
+    margin-top: -1rem; */
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+/* .searchbar input{
+    width: 350px;
+    height: 40px;
+    border-radius: 3px;
+    border: none;
+    text-align: center;
+} */
