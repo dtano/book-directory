@@ -1,6 +1,5 @@
 const { Pool, Client } = require("pg");
 const pg = require("pg");
-require("dotenv").config();
 
 pg.types.setTypeParser(1082, function(stringValue) {
   return stringValue;  //1082 for date type

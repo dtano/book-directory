@@ -7,8 +7,8 @@ const express = require("express");
 //        create functions
 
 // Import routes
-const bookRoute = require("./Routes/book");
-const authorRoute = require("./Routes/author");
+const bookRoute = require("./routes/book");
+const authorRoute = require("./routes/author");
 
 const app = express();
 

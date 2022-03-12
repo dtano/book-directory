@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "env-cmd -f ./test.env jest --watchAll --verbose --detectOpenHandles",
-    "dev": "env-cmd -f ./dev.env nodemon server",
+    "test": "env-cmd -f ./config/test.env jest --watchAll --verbose --detectOpenHandles",
+    "dev": "env-cmd -f ./config/dev.env nodemon server",
     "start": "node server.js"
   },
   "author": "Denzel Joaquin Tano",
@@ -22,6 +22,7 @@
     "nodemon": "^2.0.7",
     "pg": "^8.6.0",
     "pg-format": "^1.0.4",
+    "sequelize": "^6.17.0",
     "supertest": "^6.1.3"
   }
 }

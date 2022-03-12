@@ -1,5 +1,5 @@
 const express = require("express");
-const {pool, client} = require("../Models/db_setup");
+const {pool, client} = require("../models/db_setup");
 const format = require("pg-format");
 const fs = require("fs");
 const path = require("path");
@@ -14,12 +14,6 @@ const completeStrip = (str) => {
 const checkDupBook = async (book, duplicates) => {
     if(duplicates.rows.length > 0){
         for(dup of duplicates.rows){
-            // Turn the author name into a singular lowercase string with no punctuation
-            // let authorName = completeStrip(dup.author);
-            // if(authorName === completeStrip(book.author)){
-            //     return true;
-            // }
-
             // Now we need to see if the author id is the same as the give information
             const authors = await getBookAuthor(dup.id);
             const idArr = [];
@@ -71,14 +65,9 @@ const checkAuthorPresence = async (author_ids = []) => {
  // Returns a list of authors who wrote the book
  const getBookAuthor = async (bookID) => {
      let query = "SELECT a.id, a.given_names, a.surname FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = $1;"
+     
      const writers = await pool.query(query, [bookID]);
-    
-    //  console.log(book.id);
-    //  console.log("Writer list");
-    //  console.log(writers.rows.length);
 
-    //  book_author = await pool.query("SELECT * FROM book_author");
-    //  console.log(book_author.rows);
      return writers.rows;
  }
 

@@ -1,10 +1,10 @@
 const express = require("express");
-const {pool, client} = require("../Models/db_setup");
+const {pool, client} = require("../models/db_setup");
 const {checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, getAllBookAuthors, checkAuthorPresence, deleteFile} = require("./general");
 const format = require("pg-format");
 
 const fs = require("fs");
-const uploadMiddleware = require("../Middleware/upload");
+const uploadMiddleware = require("../middleware/upload");
 
 const bookCoverPath = "./public/uploads/bookCovers/"
 

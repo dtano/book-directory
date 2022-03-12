@@ -4,10 +4,10 @@ const fs = require("fs");
 // This module helps create unique IDs
 const crypto = require("crypto");
 const { captureRejectionSymbol } = require("events");
-const { coverUpload, createUploadMiddleware } = require("../Middleware/upload");
+const { coverUpload, createUploadMiddleware } = require("../middleware/upload");
 
 const router = express.Router();
-const {postBook, getAllBooks, updateBook, deleteBook, deleteMultipleBooks, getBook, uploadCoverImage} = require("../Controllers/bookController");
+const {postBook, getAllBooks, updateBook, deleteBook, deleteMultipleBooks, getBook, uploadCoverImage} = require("../controllers/bookController");
 
 // Adds a book to the database (A json file at the moment)
 router.post("/", coverUpload.single("cover"), async (req, res) => {
@@ -63,14 +63,10 @@ router.get("/:id", async (req, res) => {
 });
 
 // Delete multiple entries
-router.delete("/multiple", async (req, res) => {
-    await deleteMultipleBooks(req, res);
-});
+router.delete("/multiple", async (req, res) => { await deleteMultipleBooks(req, res);});
 
 // Delete single entry
-router.delete("/:id", async (req, res) => {
-    await deleteBook(req, res);
-});
+router.delete("/:id", async (req, res) => {await deleteBook(req, res);});
 
 
 
