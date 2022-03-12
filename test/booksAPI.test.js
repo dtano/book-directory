@@ -1,5 +1,5 @@
 const request = require("supertest");
-const {pool, client} = require("../Models/db_setup");
+const {pool, client} = require("../models/db_setup");
 const app = require("../app");
 const fs = require("fs-extra");
 

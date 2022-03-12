@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const {postAuthor, getAllAuthors, getAuthor, deleteAuthor, updateAuthor} = require("../Controllers/authorController");
+const {postAuthor, getAllAuthors, getAuthor, deleteAuthor, updateAuthor} = require("../controllers/authorController");
 
-const {authorUpload} = require("../Middleware/upload");
+const {authorUpload} = require("../middleware/upload");
 // Post author
 router.post("/", authorUpload.single("profile-picture"), async (req, res) => {
     await postAuthor(req, res);

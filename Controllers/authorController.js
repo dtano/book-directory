@@ -1,5 +1,5 @@
 const express = require("express");
-const {pool, client} = require("../Models/db_setup");
+const {pool, client} = require("../models/db_setup");
 const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, deleteFile} = require("./general");
 const path = require("path");
 const { PRIORITY_ABOVE_NORMAL } = require("constants");
