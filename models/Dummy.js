@@ -1,9 +1,27 @@
-const Sequelize = require("sequelize");
-const {sequelize} = require("../config/db_setup");
+'use strict';
+const {Model} = require("sequelize");
 
-const Dummy = sequelize.define('dummy', {
-    title: Sequelize.STRING,
-    description: { type: Sequelize.TEXT, allowNull: false }
-});
+class Dummy extends Model {
+    static associate(models){
 
-module.exports = Dummy;
+    }
+};
+
+module.exports = (sequelize, DataTypes) => {
+    Dummy.init({
+        id: {
+            type: DataTypes.UUID,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4,
+            allowNull: false,
+        },
+        firstName: DataTypes.STRING,
+        lastName: DataTypes.STRING,
+        email: DataTypes.STRING
+    }, {
+        sequelize,
+        modelName: "Dummy",
+    });
+
+    return Dummy;
+}
