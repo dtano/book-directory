@@ -1,12 +1,25 @@
 const app = require("./app.js");
-
-// Start the server
+const {sequelize} = require("./config/db_setup");
+const Dummy = require("./models/Dummy");
 const PORT = process.env.PORT || 5000;
+
+// sequelize.sync()
+// .then(() => {
+//   console.log("Connection to database established successfully");
+//   app.listen(PORT, () => {
+//     console.log(`Server is listening on port ${PORT}`);
+//   });
+// })
+// .catch(err => {
+//   console.log(err);
+// })
+// Start the server
+
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
 
-//module.exports = server;
+// module.exports = server;
 
 
 /*

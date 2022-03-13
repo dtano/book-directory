@@ -1,10 +1,10 @@
 const express = require("express");
+const {sequelize} = require("./config/db_setup");
 
-// TO-DO
-// - Make table creation functions
-// - Separate the database related functions from the others in general.js
-//      - Maybe create a separate file for these database functions alongside the
-//        create functions
+// Need to include all models
+const Dummy = require("./models/Dummy");
+
+sequelize.sync().then(() => console.log("Sync success"));
 
 // Import routes
 const bookRoute = require("./routes/book");

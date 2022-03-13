@@ -1,5 +1,5 @@
 const express = require("express");
-const {pool, client} = require("../models/db_setup");
+const {pool, client} = require("../config/db_setup");
 const format = require("pg-format");
 const fs = require("fs");
 const path = require("path");

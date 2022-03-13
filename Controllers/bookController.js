@@ -1,5 +1,5 @@
 const express = require("express");
-const {pool, client} = require("../models/db_setup");
+const {pool, client} = require("../config/db_setup");
 const {checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, getAllBookAuthors, checkAuthorPresence, deleteFile} = require("./general");
 const format = require("pg-format");
 
