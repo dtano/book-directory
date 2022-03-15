@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "env-cmd -f ./config/test.env jest --watchAll --verbose --detectOpenHandles",
-    "dev": "env-cmd -f ./config/dev.env nodemon server",
-    "start": "node server.js"
+    "dev": "env-cmd -f ./config/dev.env nodemon app",
+    "start": "node app.js",
+    "lint": "eslint --fix --ext .js,.jsx ."
   },
   "author": "Denzel Joaquin Tano",
   "license": "ISC",
@@ -26,5 +27,10 @@
     "sequelize": "^6.17.0",
     "sequelize-cli": "^6.4.1",
     "supertest": "^6.1.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.11.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-react": "^7.29.4"
   }
 }
