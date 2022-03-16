@@ -15,7 +15,6 @@ const clearDirectories = () => {
   }
 };
 
-
 // Clear the books table after and before the tests are executed
 beforeAll(async () => {
   // create new books table
