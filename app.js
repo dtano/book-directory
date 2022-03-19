@@ -14,9 +14,8 @@ app.use(express.json());
 app.use('/api/book', bookRoute);
 app.use('/api/author', authorRoute);
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
-  await db.sequelize.sync();
 });
 
 module.exports = app;

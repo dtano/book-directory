@@ -25,6 +25,8 @@ module.exports = {
       profile_picture: {
         type: DataTypes.STRING,
       },
+      createdAt: DataTypes.DATE,
+      updatedAt: DataTypes.DATE
     });
   },
   async down(queryInterface, DataTypes) {

@@ -13,6 +13,8 @@ module.exports = {
           type: DataTypes.INTEGER,
           primaryKey: true,
         },
+        createdAt: DataTypes.DATE,
+        updatedAt: DataTypes.DATE
       }
     );
   },

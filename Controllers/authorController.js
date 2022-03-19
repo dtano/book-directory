@@ -1,4 +1,5 @@
 const {pool} = require('../config/db_setup');
+const {Author} = require('../models/');
 const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, deleteFile} = require('./general');
 
 // Where images will be stored in the project directory
@@ -33,8 +34,10 @@ const postAuthor = async (req, res) => {
 // Returns all author entries to client
 const getAllAuthors = async (req, res) => {
   try {
-    const allAuthors = await getAllEntries('authors');
-    res.status(200).json(allAuthors);
+    const authors = await Author.findAll();
+    res.status(200).json(authors);
+    // const allAuthors = await getAllEntries('authors');
+    // res.status(200).json(allAuthors);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -42,17 +45,25 @@ const getAllAuthors = async (req, res) => {
 
 // Gets specified author
 const getAuthor = async (req, res) => {
-  const {id} = req.params;
+  const {id: authorId} = req.params;
   try {
     const responseBody = {};
-    const author = await pool.query('SELECT * FROM authors WHERE id = ($1)', [id]);
-    if (author.rows.length == 0) {
-      throw new Error(`author with id = ${id} not found`);
+    //const author = await pool.query('SELECT * FROM authors WHERE id = ($1)', [id]);
+    
+    const author = await Author.findOne({
+      where: {
+        id: authorId
+      }
+    });
+    console.log(author);
+    if (!author) {
+      throw new Error(`author with id = ${authorId} not found`);
     }
-    responseBody.details = author.rows[0];
+    
+    responseBody.details = author;
 
-    const writtenBooks = await getAuthorBooks(id);
-    responseBody.books = writtenBooks;
+    // const writtenBooks = await getAuthorBooks(authorId);
+    // responseBody.books = writtenBooks;
 
     res.status(200).json(responseBody);
   } catch (err) {

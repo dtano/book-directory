@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     cover: DataTypes.STRING,
   }, {
     sequelize,
+    timestamps: false,
     tableName: 'books',
     modelName: 'Book',
   });

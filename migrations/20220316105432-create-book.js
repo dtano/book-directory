@@ -22,6 +22,8 @@ module.exports = {
       cover: {
         type: DataTypes.STRING,
       },
+      createdAt: DataTypes.DATE,
+      updatedAt: DataTypes.DATE
     });
   },
   async down(queryInterface, DataTypes) {

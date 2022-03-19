@@ -10,7 +10,8 @@
     "lint": "eslint --fix --ext .js,.jsx .",
     "migrate:dev": "env-cmd -f ./config/dev.env sequelize-cli db:migrate",
     "migrate:test": "env-cmd -f ./config/test.env sequelize-cli db:migrate",
-    "migrate:dev:undo": "env-cmd -f ./config/dev.env sequelize-cli db:migrate:undo"
+    "migrate:dev:undo": "env-cmd -f ./config/dev.env sequelize-cli db:migrate:undo",
+    "migrate:test:undo": "env-cmd -f ./config/test.env sequelize-cli db:migrate:undo"
   },
   "author": "Denzel Joaquin Tano",
   "license": "ISC",
