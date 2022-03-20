@@ -89,7 +89,7 @@ const checkDupEntry = async (entry, tableName) => {
       // If an author has the same name and country of origin, then i have no idea
       query += `WHERE surname = $1 AND given_names = $2 AND country_origin = $3`;
       // Ideally, the books created by this author needs to be checked too
-      duplicates = await pool.query(query, [entry.surname, entry.given_names, entry.country]);
+      duplicates = await pool.query(query, [entry.surname, entry.given_names, entry.country_origin]);
       if (duplicates.rows.length > 0) {
         return true;
       }

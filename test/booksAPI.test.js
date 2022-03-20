@@ -2,6 +2,7 @@ const request = require('supertest');
 const {pool} = require('../config/db_setup');
 const app = require('../app');
 const fs = require('fs-extra');
+const db = require('../models/index');
 
 const tableName = 'books';
 
@@ -17,37 +18,13 @@ const clearDirectories = () => {
 
 // Clear the books table after and before the tests are executed
 beforeAll(async () => {
-  // create new books table
-  await pool.query(`CREATE TABLE books(
-        id SERIAL PRIMARY KEY,
-        title TEXT NOT NULL,
-        pages INTEGER,
-        date_published DATE,
-        cover VARCHAR(256)
-    )`);
-
-  // Need to create author and book_author tables as well
-  await pool.query(`CREATE TABLE authors(
-        id SERIAL PRIMARY KEY,
-        given_names VARCHAR(255),
-        surname VARCHAR(255) NOT NULL,
-        country VARCHAR(255),
-        bio TEXT,
-        profile_picture VARCHAR(256)
-    )`);
-
-  await pool.query(`CREATE TABLE book_author(
-        author_id INTEGER REFERENCES authors(id) ON DELETE CASCADE,
-        book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
-        constraint id PRIMARY KEY (book_id, author_id)
-    )`);
-
   // Clear upload folders just in case
   clearDirectories();
 });
+
 afterAll(async () => {
   // Delete table
-  await pool.query(`DROP TABLE ${tableName}, authors, book_author`);
+  await pool.query(`TRUNCATE TABLE ${tableName}, authors, book_author RESTART IDENTITY`);
 
   // Clear upload folders
   clearDirectories();
@@ -59,7 +36,7 @@ describe('Create and get author entry', () => {
     const response = await request(app).post('/api/author').send({
       given_names: 'Haruki',
       surname: 'Murakami',
-      country: 'Japan',
+      country_origin: 'Japan',
     });
     expect(response.statusCode).toBe(200);
     authorIds.push(response.body.id);
@@ -69,7 +46,7 @@ describe('Create and get author entry', () => {
     const response = await request(app).post('/api/author').send({
       given_names: 'Haruki',
       surname: 'Murakami',
-      country: 'Japan',
+      country_origin: 'Japan',
     });
 
     // const getAllresponse = await request(app).get("/api/author");
@@ -95,16 +72,14 @@ describe('Create and get author entry', () => {
   it('Should successfully get the author based on the given id', async () => {
     const response = await request(app).get(`/api/author/${authorIds[0]}`);
     expect(response.statusCode).toBe(200);
+
+    const testBody = db['Author'].build({id: 1, given_names: 'Haruki', surname: 'Murakami', country_origin: 'Japan'});
+    testBody.bio = null;
+    testBody.profile_picture = null;
+
     expect(response.body).toStrictEqual({
       'books': [],
-      'details': {
-        'id': 1,
-        'given_names': 'Haruki',
-        'surname': 'Murakami',
-        'country': 'Japan',
-        'bio': null,
-        'profile_picture': null,
-      },
+      'details': testBody.toJSON(),
     });
   });
 
@@ -119,7 +94,7 @@ describe('Create and get author entry', () => {
     const createResponse = await request(app).post('/api/author').send({
       given_names: 'Yukio',
       surname: 'Mishima',
-      country: 'Japan',
+      country_origin: 'Japan',
     });
     authorIds.push(createResponse.body.id);
     // console.log(author_ids);
@@ -135,18 +110,22 @@ describe('Create and get author entry', () => {
 describe('Update author general information and delete author', () => {
   it('Should update the country and given name of an author', async () => {
     const response = await request(app).put(`/api/author/${authorIds[0]}`).send({
-      country: 'China',
+      country_origin: 'China',
       given_names: 'Dwight',
     });
+
+    //const updatedRecord = db['Author'].build({id: 1, given_names: 'Dwight', surname: 'Murakami', country_origin: 'China'});
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toStrictEqual({
       'id': 1,
       'given_names': 'Dwight',
       'surname': 'Murakami',
-      'country': 'China',
+      'country_origin': 'China',
       'bio': null,
       'profile_picture': null,
+      'createdAt': null,
+      'updatedAt': null,
     });
   });
 
@@ -166,9 +145,11 @@ describe('Update author general information and delete author', () => {
       'id': 1,
       'given_names': 'Dwight',
       'surname': 'Murakami',
-      'country': 'China',
+      'country_origin': 'China',
       'bio': null,
       'profile_picture': null,
+      'createdAt': null,
+      'updatedAt': null,
     });
 
     authorIds.splice(0, 1);
@@ -198,6 +179,8 @@ describe('Book post route', () => {
       'pages': 450,
       'title': 'Runaway Horses',
       'cover': null,
+      'createdAt': null,
+      'updatedAt': null,
     });
     bookId = response.body.id;
   });

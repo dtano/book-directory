@@ -6,6 +6,17 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Author.belongsToMany(models.Book, { through: 'book_author' });
     }
+
+    static createInstance(data) {
+      const instance = Author.build();
+      instance.id = data.id;
+      instance.given_names = data.given_names;
+      instance.surname = data.surname;
+      instance.country_origin = data.country_origin;
+      instance.bio = data.bio;
+
+      return instance;
+    }
   }
 
   Author.init({
@@ -22,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     profile_picture: DataTypes.STRING,
   }, {
     sequelize,
+    timestamps: false,
     tableName: 'authors',
     modelName: 'Author',
   });

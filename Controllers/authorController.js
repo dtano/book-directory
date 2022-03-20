@@ -55,15 +55,15 @@ const getAuthor = async (req, res) => {
         id: authorId
       }
     });
-    console.log(author);
+    
     if (!author) {
       throw new Error(`author with id = ${authorId} not found`);
     }
     
     responseBody.details = author;
 
-    // const writtenBooks = await getAuthorBooks(authorId);
-    // responseBody.books = writtenBooks;
+    const writtenBooks = await getAuthorBooks(authorId);
+    responseBody.books = writtenBooks;
 
     res.status(200).json(responseBody);
   } catch (err) {

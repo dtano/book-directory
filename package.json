@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "env-cmd -f ./config/test.env jest --watchAll --verbose --detectOpenHandles",
-    "dev": "env-cmd -f ./config/dev.env nodemon app",
-    "start": "node app.js",
+    "dev": "env-cmd -f ./config/dev.env nodemon server",
+    "start": "node server.js",
     "lint": "eslint --fix --ext .js,.jsx .",
     "migrate:dev": "env-cmd -f ./config/dev.env sequelize-cli db:migrate",
     "migrate:test": "env-cmd -f ./config/test.env sequelize-cli db:migrate",
