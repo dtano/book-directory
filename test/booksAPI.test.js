@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const db = require('../models/index');
 
 const tableName = 'books';
+const nonExistantAuthorId = 100;
 
 // Holds the name of the folders that contain uploaded test files
 const uploadDirNames = ['test/testUploads/bookCovers', 'test/testUploads/authors'];
@@ -124,8 +125,6 @@ describe('Update author general information and delete author', () => {
       'country_origin': 'China',
       'bio': null,
       'profile_picture': null,
-      'createdAt': null,
-      'updatedAt': null,
     });
   });
 
@@ -141,24 +140,15 @@ describe('Update author general information and delete author', () => {
     const response = await request(app).delete(`/api/author/${authorIds[0]}`);
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toStrictEqual({
-      'id': 1,
-      'given_names': 'Dwight',
-      'surname': 'Murakami',
-      'country_origin': 'China',
-      'bio': null,
-      'profile_picture': null,
-      'createdAt': null,
-      'updatedAt': null,
-    });
+    expect(response.body).toStrictEqual(`Successfully deleted author with id: ${authorIds[0]}`);
 
     authorIds.splice(0, 1);
   });
 
   it('Fail to delete an author entry that does not exist', async () => {
-    const response = await request(app).delete(`/api/author/${1}`);
+    const response = await request(app).delete(`/api/author/${nonExistantAuthorId}`);
     expect(response.statusCode).toBe(400);
-    expect(response.body).toStrictEqual('There is possibly no entry with id = 1');
+    expect(response.body).toStrictEqual(`Author with id = ${nonExistantAuthorId} not found`);
   });
 });
 

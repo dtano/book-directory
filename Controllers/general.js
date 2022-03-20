@@ -140,6 +140,7 @@ const createUpdateQuery = (tableName, conditions = {}, data = {}) => {
 
 
 // Creates an INSERT query with the given data and tablename
+// HOW TO USE: const {query, values} = createInsertQuery('authors', {...req.body, ...authorImg});
 const createInsertQuery = (tableName, data) => {
   if (!tableName || Object.keys(data).length === 0) {
     return {'query': '', 'values': []};
@@ -190,6 +191,14 @@ const checkUniqueness = (a = [], b = []) => {
   return set.size === (a.length + b.length);
 };
 
+const isEmpty = (obj) => {
+  return Object.keys(obj).length === 0;
+}
+
+const isNullOrEmpty = (obj) => {
+  return obj == null || isEmpty(obj);
+}
+
 module.exports = {
   getAllEntries,
   completeStrip,
@@ -203,4 +212,6 @@ module.exports = {
   checkUniqueness,
   deleteFile,
   clearDirectory,
+  isEmpty,
+  isNullOrEmpty,
 };

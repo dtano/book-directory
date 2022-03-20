@@ -1,28 +1,35 @@
 const {pool} = require('../config/db_setup');
 const {Author} = require('../models/');
-const {checkDupEntry, createUpdateQuery, createInsertQuery, getAllEntries, deleteFile} = require('./general');
+const {isEmpty, isNullOrEmpty, createUpdateQuery, deleteFile} = require('./general');
+const path = require('path');
 
 // Where images will be stored in the project directory
-// const authorUploadPath = path.join("public", "uploads/authors");
-const authorImgPath = './public/uploads/authors/';
+const authorImgPath = path.join(__dirname, "../public/uploads/authors/");
+//const authorImgPath = './public/uploads/authors/';
+
 
 // Create a new author entry
 const postAuthor = async (req, res) => {
   try {
-    // Need to validate the given data
-    // name and country of origin
-    if (await checkDupEntry(req.body, 'authors')) {
+    if(isNullOrEmpty(req.body)) throw new Error('Request body is empty');
+    // Add the author image file path to the query body if there is an image attached
+    const authorImg = {profile_picture: req.file != null ? req.file.filename : null};
+    req.body.profile_picture = authorImg.profile_picture;
+
+    // Might have to tweak this somehow
+    const [row, created] = await Author.findOrCreate({
+      where: req.body,
+    });
+
+    if(!created){
       throw new Error('Duplicate author entry');
     }
 
-    // Add the author image file path to the query body if there is an image attached
-    // const imgFileName = req.file != null ? req.file.filename : null;
-    const authorImg = {profile_picture: req.file != null ? req.file.filename : null};
-
-    const {query, values} = createInsertQuery('authors', {...req.body, ...authorImg});
-
-    const newAuthor = await pool.query(query, values);
-    res.status(200).json(newAuthor.rows[0]);
+    row.bio = req.body.bio;
+    row.profile_picture = req.body.profile_picture;
+    await row.save();
+    
+    res.status(200).json(row.toJSON());
   } catch (err) {
     if (req.file != null) {
       deleteFile(`${authorImgPath}${req.file.filename}`);
@@ -36,8 +43,6 @@ const getAllAuthors = async (req, res) => {
   try {
     const authors = await Author.findAll();
     res.status(200).json(authors);
-    // const allAuthors = await getAllEntries('authors');
-    // res.status(200).json(allAuthors);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -48,18 +53,12 @@ const getAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
     const responseBody = {};
-    //const author = await pool.query('SELECT * FROM authors WHERE id = ($1)', [id]);
+    const author = await findAuthorWithId(authorId);
     
-    const author = await Author.findOne({
-      where: {
-        id: authorId
-      }
-    });
-    
-    if (!author) {
+    if (isNullOrEmpty(author)) {
       throw new Error(`author with id = ${authorId} not found`);
     }
-    
+
     responseBody.details = author;
 
     const writtenBooks = await getAuthorBooks(authorId);
@@ -73,26 +72,28 @@ const getAuthor = async (req, res) => {
 
 // Updates author entry with given data
 const updateAuthor = async (req, res) => {
-  const {id} = req.params;
+  const {id: authorId} = req.params;
   try {
+    if(isEmpty(req.body)){
+      throw new Error(`Request body is empty`);
+    }
+    
+    // Get entry to update
+    const author = await findAuthorWithId(authorId);
+    
     if (req.file != null) {
-      // Get entry to update
-      const author = await pool.query('SELECT * FROM authors WHERE id = ($1)', [id]);
-      if (author.rows.length == 0) {
-        throw new Error(`Author with id = ${id} not found`);
-      }
-
       // Delete old picture
       deleteFile(`${authorImgPath}${author.rows[0].cover}`);
-
       // Gotta change the book's cover image with the new filepath
       req.body.cover = req.file.filename;
     }
 
-    // Must make sure that req body is proper
-    const {query, values} = createUpdateQuery('authors', {id: id}, req.body);
-    updatedEntry = await pool.query(query, values);
-    res.status(200).json(updatedEntry.rows[0]);
+    const [ rowsUpdated, [updatedAuthor] ] = await Author.update(req.body, {returning: true, where: {id: authorId}});
+    if(rowsUpdated == 0){
+      throw new Error(`Failed to update author with id = ${authorId}`);
+    }
+    
+    res.status(200).json(updatedAuthor.toJSON());
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -100,17 +101,25 @@ const updateAuthor = async (req, res) => {
 
 // Deletes author with given id if it exists
 const deleteAuthor = async (req, res) => {
-  const {id} = req.params;
+  const {id: authorId} = req.params;
   try {
-    const deletedEntry = await pool.query('DELETE FROM authors WHERE id = ($1) RETURNING *', [id]);
-    if (deletedEntry.rows.length == 0) {
-      throw new Error(`There is possibly no entry with id = ${id}`);
+    const author = await findAuthorWithId(authorId);
+
+    const numDeletedEntries = await Author.destroy({
+      where: {
+        id: authorId,
+      }
+    });
+    
+    if (numDeletedEntries == 0) {
+      throw new Error(`Failed to delete entry with id = ${authorId}`);
     }
 
-    if (deletedEntry.rows[0].profile_picture != null) {
-      deleteFile(`${authorImgPath}${deletedEntry.rows[0].profile_picture}`);
+    const profilePicturePath = author.profile_picture;
+    if (profilePicturePath != null) {
+      deleteFile(`${authorImgPath}${profilePicturePath}`);
     }
-    res.status(200).json(deletedEntry.rows[0]);
+    res.status(200).json(`Successfully deleted author with id: ${authorId}`);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -123,6 +132,16 @@ const getAuthorBooks = async (authorID) => {
 
   return writtenBooks.rows;
 };
+
+const findAuthorWithId = async (authorId) => {
+  // Get entry to update
+  const author = await Author.findOne({where: {id: authorId}});
+  if (isNullOrEmpty(author)) {
+    throw new Error(`Author with id = ${authorId} not found`);
+  }
+
+  return author;
+}
 
 module.exports = {
   postAuthor,
