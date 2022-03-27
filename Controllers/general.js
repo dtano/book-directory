@@ -60,9 +60,6 @@ const checkAuthorPresence = async (authorIds = []) => {
     }
   });
 
-  // const query = format('SELECT * FROM authors WHERE id IN (%L)', authorIds);
-  // const authors = await pool.query(query, []);
-
   if (authors.length === authorIds.length) {
     // Means that all authors are valid
     return [true, authors];

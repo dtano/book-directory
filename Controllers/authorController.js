@@ -1,13 +1,11 @@
-const {pool} = require('../config/db_setup');
 const {Author, Book} = require('../models/');
-const {isEmpty, isNullOrEmpty, createUpdateQuery, deleteFile} = require('./general');
+const {isEmpty, isNullOrEmpty, deleteFile} = require('./general');
 const path = require('path');
 
 // Where images will be stored in the project directory
-const authorImgPath = path.join(__dirname, "../public/uploads/authors/");
+const authorImgPath = path.join(__dirname, '../public/uploads/authors/');
 
 const expectedRequestKeys = ['given_names', 'surname', 'country_origin', 'bio', 'profile_picture'];
-//const authorImgPath = './public/uploads/authors/';
 
 
 // Create a new author entry
@@ -81,10 +79,9 @@ const updateAuthor = async (req, res) => {
     const author = await findAuthorWithId(authorId);
     
     if (req.file != null) {
-      // Delete old picture
-      deleteFile(`${authorImgPath}${author.rows[0].cover}`);
-      // Gotta change the book's cover image with the new filepath
-      req.body.cover = req.file.filename;
+      deleteProfilePicture(author.profile_picture);
+      // Gotta change the author's profile picture with the new filepath
+      req.body.profile_picture = req.file.filename;
     }
 
     const [ rowsUpdated, [updatedAuthor] ] = await Author.update(req.body, {returning: true, where: {id: authorId}});
@@ -118,26 +115,11 @@ const deleteAuthor = async (req, res) => {
     if (profilePicturePath != null) {
       deleteFile(`${authorImgPath}${profilePicturePath}`);
     }
+
     res.status(200).json(`Successfully deleted author with id: ${authorId}`);
   } catch (err) {
     res.status(400).json(err.message);
   }
-};
-
-// Gets all of the books an author has written
-const getAuthorBooks = async (authorID) => {
-
-  const allWrittenBooks = await Author.findAll({
-    include: Book,
-    where: {
-      id: authorID,
-    }
-  });
-
-  const query = 'SELECT b.id, b.title, b.cover FROM book_author ba JOIN books b ON (ba.book_id = b.id) WHERE ba.author_id = $1;';
-  const writtenBooks = await pool.query(query, [authorID]);
-
-  return writtenBooks.rows;
 };
 
 const findAuthorWithId = async (authorId) => {
@@ -162,7 +144,12 @@ const validateAuthorRequestBody = (body) => {
   });
 
   return isValid;
+}
 
+const deleteProfilePicture = (profilePicturePath) => {
+  if(profilePicturePath != null){
+    deleteFile(`${authorImgPath}${profilePicturePath}`);
+  }
 }
 
 module.exports = {

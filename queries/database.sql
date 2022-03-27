@@ -35,3 +35,5 @@ ALTER COLUMN author SET NOT NULL;
 SELECT id FROM book_author ba JOIN authors a ON (ba.author_id = a.id) WHERE ba.book_id = 1; 
 
 INSERT INTO book_author (author_id, book_id) VALUES();
+
+SELECT b.id, b.title, b.cover FROM book_author ba JOIN books b ON (ba.book_id = b.id) WHERE ba.author_id = $1;

@@ -36,6 +36,10 @@ beforeAll(async () => {
   clearDirectories();
 });
 
+afterAll(async () => {
+  clearDirectories();
+});
+
 const authorIds = [];
 describe('Create and get author entry', () => {
   it('Should create a new author entry', async () => {
@@ -161,13 +165,11 @@ describe('Book post route', () => {
     });
     expect(response.statusCode).toBe(200);
     expect(response.body).toStrictEqual({
-      'date_published': '1989-03-22',
+      'date_published': '1989-03-22T00:00:00.000Z',
       'id': 1,
       'pages': 450,
       'title': 'Runaway Horses',
       'cover': null,
-      'createdAt': null,
-      'updatedAt': null,
     });
     bookId = response.body.id;
   });
@@ -225,7 +227,7 @@ describe('Book post route', () => {
       date_published: '1975-01-01',
     });
     expect(response.statusCode).toBe(400);
-    expect(response.body).toStrictEqual('No author specified');
+    expect(response.body).toStrictEqual('No author(s) specified');
   });
 
   it('Allow a book to be created with multiple authors', async () => {

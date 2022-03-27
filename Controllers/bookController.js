@@ -1,16 +1,18 @@
 const {pool} = require('../config/db_setup');
-const {Book} = require('../models/');
-const {isNullOrEmpty, checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence, deleteFile} = require('./general');
+const {Author, Book} = require('../models/');
+const {isNullOrEmpty, checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, getBookAuthor, checkAuthorPresence, deleteFile} = require('./general');
 const format = require('pg-format');
+const path = require('path');
 
-const bookCoverPath = './public/uploads/bookCovers/';
+const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
+const expectedRequestKeys = ['title', 'pages', 'date_published', 'cover', 'author_ids'];
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
   try {
     // Check if author is specified
-    if (!('author_ids' in req.body)) {
-      throw new Error('No author specified');
+    if (!validateBookRequestBody(req.body)) {
+      throw new Error('No author(s) specified');
     }
 
     // This assumes that author_id is an array of IDs
@@ -19,14 +21,13 @@ const postBook = async (req, res) => {
       throw new Error('At least one of the specified authors does not exist in the database');
     }
 
-    // // Need to look for duplicates
+    // Need to look for duplicates
     if (await checkDupEntry(req.body, 'books')) {
       throw new Error('The given entry already exists in the database');
     }
 
     // Add the cover image file path to the query body if there is an image attached
     const coverImgName = req.file != null ? req.file.filename : null;
-
     const queryBody = {
       title: req.body.title,
       pages: req.body.pages,
@@ -34,8 +35,7 @@ const postBook = async (req, res) => {
       cover: coverImgName,
     };
 
-    // Create an Insert query using the query body
-    //const {query, values} = createInsertQuery('books', queryBody);
+    // Create book instance
     // Might have to tweak this somehow
     const [row, created] = await Book.findOrCreate({
       where: queryBody,
@@ -44,9 +44,6 @@ const postBook = async (req, res) => {
     if(!created){
       throw new Error('Duplicate author entry');
     }
-
-    // Make the new book entry
-    //const newBook = await pool.query(query, values);
 
     // Then link the book to the author by creating an entry in the book_author table
     // const bookAuthorLink = await linkBookToAuthor(newBook.rows[0].id, req.body.author_id);
@@ -101,7 +98,7 @@ const removeAuthorsFromBook = async (bookID, authorsToRemove) => {
 const updateBook = async (req, res) => {
   const {id} = req.params;
   try {
-    if (req.body === null || Object.keys(req.body).length === 0) {
+    if (isNullOrEmpty(req.body)) {
       throw new Error('The body is empty');
     }
 
@@ -277,21 +274,13 @@ const deleteMultipleBooks = async (req, res) => {
 const getBook = async (req, res) => {
   const {id: bookId} = req.params;
   try {
-    const responseBody = {};
     const book = await findBookWithId(bookId);
     
     if (isNullOrEmpty(book)) {
       throw new Error(`Book with id = ${bookId} not found`);
     }
 
-    responseBody.details = book;
-
-    // Find the author
-    const authors = await getBookAuthor(book.rows[0].id);
-    responseBody.authors = authors;
-
-    res.status(200).json(responseBody);
-
+    res.status(200).json(book);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -320,21 +309,11 @@ const deleteBook = async (req, res) => {
 // On error, it simply returns a blank array
 const getAllBooks = async (req, res) => {
   try {
-    const allBooks = await Book.findAll();
-
-    // Holds the information in this format: { details: {title: ?, pages: ?}, authors: {id: ?, name: ?}} (something like that)
-    // Bottom might not be necessary, depends on how front end looks
-    const responseBody = [];
-    for (let i = 0; i < allBooks.length; i++) {
-      const bookEntry = {};
-      // General book details
-      bookEntry.details = allBooks[i];
-      // Get author(s) of book
-      bookEntry.authors = await getBookAuthor(allBooks[i].id);
-      responseBody.push(bookEntry);
-    }
+    const allBooks = await Book.findAll({
+      include: Author,
+    });
     
-    res.status(200).json(responseBody);
+    res.status(200).json(allBooks);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -372,13 +351,27 @@ const uploadCoverImage = async (req, res) => {
 };
 
 const findBookWithId = async (bookId) => {
-  const book = await Book.findOne({where: {id: bookId}});
-
-  if (isNullOrEmpty(book)) {
-    throw new Error(`Book with id = ${bookId} not found`);
-  }
+  const book = await Book.findOne({
+    where: {
+      id: bookId,
+    },
+    include: Author
+  });
 
   return book;
+}
+
+const validateBookRequestBody = (body) => {
+  let isValid = true;
+  let areAuthorsSpecified = false;
+  Object.keys(body).forEach(key => {
+    // Find whether key exists in specified key list
+    if(!expectedRequestKeys.includes(key)) isValid = false;
+
+    if(key == 'author_ids') areAuthorsSpecified = true;
+  });
+
+  return isValid && areAuthorsSpecified;
 }
 
 module.exports = {
