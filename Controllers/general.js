@@ -1,7 +1,9 @@
 const {pool} = require('../config/db_setup');
+const Op = require('../models/index').Sequelize.Op; 
 const format = require('pg-format');
 const fs = require('fs');
 const path = require('path');
+const {Author} = require('../models/');
 
 // A extensive strip of a string
 const completeStrip = (str) => {
@@ -50,14 +52,22 @@ const checkAuthorPresence = async (authorIds = []) => {
     throw new Error('No authors specified');
   }
 
-  const query = format('SELECT * FROM authors WHERE id IN (%L)', authorIds);
-  const authors = await pool.query(query, []);
+  const authors = await Author.findAll({
+    where: {
+      id: {
+        [Op.in]: authorIds, 
+      }
+    }
+  });
 
-  if (authors.rows.length === authorIds.length) {
+  // const query = format('SELECT * FROM authors WHERE id IN (%L)', authorIds);
+  // const authors = await pool.query(query, []);
+
+  if (authors.length === authorIds.length) {
     // Means that all authors are valid
-    return true;
+    return [true, authors];
   }
-  return false;
+  return [false, null];
 };
 
 // Returns a list of authors who wrote the book

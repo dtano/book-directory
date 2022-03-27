@@ -4,7 +4,10 @@ const {Model} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Book extends Model {
     static associate(models) {
-      Book.belongsToMany(models.Author, { through: 'book_author' });
+      Book.belongsToMany(models.Author, { 
+        through: 'book_author', 
+        foreignKey: 'author_id', 
+      });
     }
 
     toJSON(){
@@ -27,5 +30,6 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'books',
     modelName: 'Book',
   });
+  
   return Book;
 };

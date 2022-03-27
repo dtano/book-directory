@@ -4,7 +4,10 @@ const {Model} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Author extends Model {
     static associate(models) {
-      Author.belongsToMany(models.Book, { through: 'book_author' });
+      Author.belongsToMany(models.Book, { 
+        through: 'book_author',
+        foreignKey: 'book_id',
+      });
     }
 
     static createInstance(data) {

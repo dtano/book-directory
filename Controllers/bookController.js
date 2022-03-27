@@ -1,5 +1,6 @@
 const {pool} = require('../config/db_setup');
-const {checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence, deleteFile} = require('./general');
+const {Book} = require('../models/');
+const {isNullOrEmpty, checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, createInsertQuery, getAllEntries, getBookAuthor, checkAuthorPresence, deleteFile} = require('./general');
 const format = require('pg-format');
 
 const bookCoverPath = './public/uploads/bookCovers/';
@@ -13,7 +14,8 @@ const postBook = async (req, res) => {
     }
 
     // This assumes that author_id is an array of IDs
-    if (!(await checkAuthorPresence(req.body.author_ids))) {
+    [allAuthorsExist, authors] = await checkAuthorPresence(req.body.author_ids);
+    if (!allAuthorsExist) {
       throw new Error('At least one of the specified authors does not exist in the database');
     }
 
@@ -33,20 +35,28 @@ const postBook = async (req, res) => {
     };
 
     // Create an Insert query using the query body
-    const {query, values} = createInsertQuery('books', queryBody);
+    //const {query, values} = createInsertQuery('books', queryBody);
+    // Might have to tweak this somehow
+    const [row, created] = await Book.findOrCreate({
+      where: queryBody,
+    });
+
+    if(!created){
+      throw new Error('Duplicate author entry');
+    }
 
     // Make the new book entry
-    const newBook = await pool.query(query, values);
+    //const newBook = await pool.query(query, values);
 
     // Then link the book to the author by creating an entry in the book_author table
     // const bookAuthorLink = await linkBookToAuthor(newBook.rows[0].id, req.body.author_id);
-    const bookAuthorLinks = await linkBookToAuthors(newBook.rows[0].id, req.body.author_ids);
+    const bookAuthorLinks = await linkBookToAuthors(row.id, req.body.author_ids);
 
     if (bookAuthorLinks == null || bookAuthorLinks.rows.length != req.body.author_ids.length) {
       throw new Error('Failed to establish a link between book and author(s)');
     }
 
-    res.status(200).json(newBook.rows[0]);
+    res.status(200).json(row);
   } catch (err) {
     // If there was an error and the request had a file, then delete it
     if (req.file != null) {
@@ -265,22 +275,24 @@ const deleteMultipleBooks = async (req, res) => {
 };
 
 const getBook = async (req, res) => {
-  const {id} = req.params;
+  const {id: bookId} = req.params;
   try {
-    const book = await pool.query('SELECT * FROM books WHERE id = ($1)', [id]);
-    if (book.rows.length == 0) {
-      throw new Error(`Book with id = ${id} not found`);
+    const responseBody = {};
+    const book = await findBookWithId(bookId);
+    
+    if (isNullOrEmpty(book)) {
+      throw new Error(`Book with id = ${bookId} not found`);
     }
+
+    responseBody.details = book;
 
     // Find the author
     const authors = await getBookAuthor(book.rows[0].id);
+    responseBody.authors = authors;
 
-    res.status(200).json({
-      details: book.rows[0],
-      authors: authors,
-    });
+    res.status(200).json(responseBody);
+
   } catch (err) {
-    // console.error(err.message);
     res.status(400).json(err.message);
   }
 };
@@ -308,7 +320,7 @@ const deleteBook = async (req, res) => {
 // On error, it simply returns a blank array
 const getAllBooks = async (req, res) => {
   try {
-    const allBooks = await getAllEntries('books');
+    const allBooks = await Book.findAll();
 
     // Holds the information in this format: { details: {title: ?, pages: ?}, authors: {id: ?, name: ?}} (something like that)
     // Bottom might not be necessary, depends on how front end looks
@@ -321,6 +333,7 @@ const getAllBooks = async (req, res) => {
       bookEntry.authors = await getBookAuthor(allBooks[i].id);
       responseBody.push(bookEntry);
     }
+    
     res.status(200).json(responseBody);
   } catch (err) {
     res.status(400).json(err.message);
@@ -357,6 +370,16 @@ const uploadCoverImage = async (req, res) => {
     res.status(400).json(err.message);
   }
 };
+
+const findBookWithId = async (bookId) => {
+  const book = await Book.findOne({where: {id: bookId}});
+
+  if (isNullOrEmpty(book)) {
+    throw new Error(`Book with id = ${bookId} not found`);
+  }
+
+  return book;
+}
 
 module.exports = {
   postBook,

@@ -1,10 +1,12 @@
 const {pool} = require('../config/db_setup');
-const {Author} = require('../models/');
+const {Author, Book} = require('../models/');
 const {isEmpty, isNullOrEmpty, createUpdateQuery, deleteFile} = require('./general');
 const path = require('path');
 
 // Where images will be stored in the project directory
 const authorImgPath = path.join(__dirname, "../public/uploads/authors/");
+
+const expectedRequestKeys = ['given_names', 'surname', 'country_origin', 'bio', 'profile_picture'];
 //const authorImgPath = './public/uploads/authors/';
 
 
@@ -12,9 +14,13 @@ const authorImgPath = path.join(__dirname, "../public/uploads/authors/");
 const postAuthor = async (req, res) => {
   try {
     if(isNullOrEmpty(req.body)) throw new Error('Request body is empty');
+    
     // Add the author image file path to the query body if there is an image attached
     const authorImg = {profile_picture: req.file != null ? req.file.filename : null};
     req.body.profile_picture = authorImg.profile_picture;
+
+    // Need to validate request body
+    if(!validateAuthorRequestBody(req.body)) throw new Error('Request body contains an invalid key');
 
     // Might have to tweak this somehow
     const [row, created] = await Author.findOrCreate({
@@ -24,10 +30,6 @@ const postAuthor = async (req, res) => {
     if(!created){
       throw new Error('Duplicate author entry');
     }
-
-    row.bio = req.body.bio;
-    row.profile_picture = req.body.profile_picture;
-    await row.save();
     
     res.status(200).json(row.toJSON());
   } catch (err) {
@@ -41,7 +43,10 @@ const postAuthor = async (req, res) => {
 // Returns all author entries to client
 const getAllAuthors = async (req, res) => {
   try {
-    const authors = await Author.findAll();
+    const authors = await Author.findAll({
+      include: Book,
+    });
+
     res.status(200).json(authors);
   } catch (err) {
     res.status(400).json(err.message);
@@ -52,19 +57,13 @@ const getAllAuthors = async (req, res) => {
 const getAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
-    const responseBody = {};
     const author = await findAuthorWithId(authorId);
     
     if (isNullOrEmpty(author)) {
       throw new Error(`author with id = ${authorId} not found`);
     }
 
-    responseBody.details = author;
-
-    const writtenBooks = await getAuthorBooks(authorId);
-    responseBody.books = writtenBooks;
-
-    res.status(200).json(responseBody);
+    res.status(200).json(author);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -127,6 +126,14 @@ const deleteAuthor = async (req, res) => {
 
 // Gets all of the books an author has written
 const getAuthorBooks = async (authorID) => {
+
+  const allWrittenBooks = await Author.findAll({
+    include: Book,
+    where: {
+      id: authorID,
+    }
+  });
+
   const query = 'SELECT b.id, b.title, b.cover FROM book_author ba JOIN books b ON (ba.book_id = b.id) WHERE ba.author_id = $1;';
   const writtenBooks = await pool.query(query, [authorID]);
 
@@ -135,12 +142,27 @@ const getAuthorBooks = async (authorID) => {
 
 const findAuthorWithId = async (authorId) => {
   // Get entry to update
-  const author = await Author.findOne({where: {id: authorId}});
+  const author = await Author.findOne({
+    where: {id: authorId},
+    include: Book,
+  });
+  
   if (isNullOrEmpty(author)) {
     throw new Error(`Author with id = ${authorId} not found`);
   }
 
   return author;
+}
+
+const validateAuthorRequestBody = (body) => {
+  let isValid = true;
+  Object.keys(body).forEach(key => {
+    // Find whether key exists in specified key list
+    if(!expectedRequestKeys.includes(key)) isValid = false;
+  });
+
+  return isValid;
+
 }
 
 module.exports = {

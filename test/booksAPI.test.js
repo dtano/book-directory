@@ -20,14 +20,19 @@ const clearDirectories = () => {
 // Clear the books table after and before the tests are executed
 beforeAll(async () => {
   // Clear upload folders just in case
-  clearDirectories();
-});
+  // const allModels = db.sequelize.models;
+  // Object.keys(allModels).forEach(async (modelName) => {
+  //   const entity = db[modelName];
 
-afterAll(async () => {
+  //   if(modelName != 'book_author'){
+  //     if(entity != null) await entity.truncate({cascade: true});
+  //   }
+    
+  // });
+  
   // Delete table
   await pool.query(`TRUNCATE TABLE ${tableName}, authors, book_author RESTART IDENTITY`);
 
-  // Clear upload folders
   clearDirectories();
 });
 
@@ -39,7 +44,9 @@ describe('Create and get author entry', () => {
       surname: 'Murakami',
       country_origin: 'Japan',
     });
+
     expect(response.statusCode).toBe(200);
+
     authorIds.push(response.body.id);
   });
 
@@ -49,10 +56,6 @@ describe('Create and get author entry', () => {
       surname: 'Murakami',
       country_origin: 'Japan',
     });
-
-    // const getAllresponse = await request(app).get("/api/author");
-    // console.log("Alloi duplicate");
-    // console.log(getAllresponse.body);
 
     expect(response.statusCode).toBe(400);
     expect(response.body).toStrictEqual('Duplicate author entry');
@@ -64,9 +67,6 @@ describe('Create and get author entry', () => {
       country: 'USA',
     });
 
-    // const getAllresponse = await request(app).get("/api/author");
-    // console.log("Alloi no surname");
-    // console.log(getAllresponse.body);
     expect(response.statusCode).toBe(400);
   });
 
@@ -74,14 +74,19 @@ describe('Create and get author entry', () => {
     const response = await request(app).get(`/api/author/${authorIds[0]}`);
     expect(response.statusCode).toBe(200);
 
-    const testBody = db['Author'].build({id: 1, given_names: 'Haruki', surname: 'Murakami', country_origin: 'Japan'});
-    testBody.bio = null;
-    testBody.profile_picture = null;
-
-    expect(response.body).toStrictEqual({
-      'books': [],
-      'details': testBody.toJSON(),
+    const testEntity = db.Author.build({
+      id: 1, 
+      given_names: 'Haruki', 
+      surname: 'Murakami', 
+      country_origin: 'Japan',
+      bio: null,
+      profile_picture: null,
     });
+
+    const expectedBody = testEntity.toJSON();
+    expectedBody.Books = [];
+
+    expect(response.body).toStrictEqual(expectedBody);
   });
 
   it('Should fail to get an author with a non-existent id', async () => {
@@ -98,12 +103,9 @@ describe('Create and get author entry', () => {
       country_origin: 'Japan',
     });
     authorIds.push(createResponse.body.id);
-    // console.log(author_ids);
 
     // Then call the get all route
     const response = await request(app).get('/api/author');
-    // console.log("Alloi");
-    // console.log(response.body);
     expect(response.body.length).toBe(authorIds.length);
   });
 });
@@ -115,17 +117,12 @@ describe('Update author general information and delete author', () => {
       given_names: 'Dwight',
     });
 
-    //const updatedRecord = db['Author'].build({id: 1, given_names: 'Dwight', surname: 'Murakami', country_origin: 'China'});
+    const updatedRecord = db.Author.build({
+      id: 1, given_names: 'Dwight', surname: 'Murakami', country_origin: 'China', bio: null, profile_picture: null
+    });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toStrictEqual({
-      'id': 1,
-      'given_names': 'Dwight',
-      'surname': 'Murakami',
-      'country_origin': 'China',
-      'bio': null,
-      'profile_picture': null,
-    });
+    expect(response.body).toStrictEqual(updatedRecord.toJSON());
   });
 
   it('Give wrong properties to update', async () => {
