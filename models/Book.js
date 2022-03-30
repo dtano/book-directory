@@ -10,9 +10,9 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    toJSON(){
-      return {...this.get(), id: undefined}
-    }
+    // toJSON(){
+    //   return {...this.get(), id: undefined}
+    // }
   }
 
   Book.init({

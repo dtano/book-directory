@@ -47,13 +47,13 @@ const postBook = async (req, res) => {
 
     // Then link the book to the author by creating an entry in the book_author table
     // const bookAuthorLink = await linkBookToAuthor(newBook.rows[0].id, req.body.author_id);
-    const bookAuthorLinks = await linkBookToAuthors(row.id, req.body.author_ids);
+    const bookWithAuthors = await linkBookToAuthors(row, req.body.author_ids);
 
-    if (bookAuthorLinks == null || bookAuthorLinks.rows.length != req.body.author_ids.length) {
+    if (isNullOrEmpty(bookWithAuthors)) {
       throw new Error('Failed to establish a link between book and author(s)');
     }
 
-    res.status(200).json(row);
+    res.status(200).json(bookWithAuthors);
   } catch (err) {
     // If there was an error and the request had a file, then delete it
     if (req.file != null) {
@@ -64,22 +64,33 @@ const postBook = async (req, res) => {
 };
 
 // Use this to link multiple authors to a book
-const linkBookToAuthors = async (bookId, authorIds) => {
+const linkBookToAuthors = async (book, authorIds) => {
   // Now we need to make nested array that contains book_id and author_ids
   if (authorIds.length === 0) {
     return {};
   }
 
-  const values = [];
+  let authors = [];
+  for(const authorId of authorIds){
+    const author = await Author.findOne({
+      where: {
+        id: authorId
+      }
+    });
 
-  authorIds.forEach((authorId) => {
-    values.push([authorId, bookId]);
+    if(!isNullOrEmpty(author)){
+      authors.push(author);
+    }
+  }
+
+  await book.setAuthors(authors);
+
+  const bookWithAuthors = await Book.findOne({
+    where: {id: book.id},
+    include: Author,
   });
 
-  const query = format('INSERT INTO book_author(author_id, book_id) VALUES %L RETURNING *', values);
-  const links = await pool.query(query);
-
-  return links;
+  return bookWithAuthors;
 };
 
 // Remove one or more authors from the given book
