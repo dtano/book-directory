@@ -164,13 +164,24 @@ describe('Book post route', () => {
       author_ids: authorIds,
     });
     expect(response.statusCode).toBe(200);
-    expect(response.body).toStrictEqual({
-      'date_published': '1989-03-22T00:00:00.000Z',
-      'id': 1,
-      'pages': 450,
-      'title': 'Runaway Horses',
-      'cover': null,
+    expect(response.body).toBeDefined();
+
+    expect(response.body.Authors.length).toBeGreaterThan(0);
+    expect(response.body.Authors[0]).toStrictEqual({
+      'id': 2,
+      'given_names': 'Yukio',
+      'surname': 'Mishima',
+      'profile_picture': null,
+      'country_origin': 'Japan',
+      'bio': null,
+      'book_author': {
+        'author_id': 1,
+        'book_id': 2,
+        'createdAt': expect.any(String),
+        'updatedAt': expect.any(String),
+      }
     });
+    
     bookId = response.body.id;
   });
 
@@ -253,17 +264,24 @@ describe('Get book route', () => {
     const response = await request(app).get(`/api/book/${bookId}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toStrictEqual({
-      'details': {
-        'date_published': '1989-03-22',
-        'id': 1,
-        'pages': 450,
-        'title': 'Runaway Horses',
-        'cover': null,
-      },
-      'authors': [{
+      'date_published': '1989-03-22T00:00:00.000Z',
+      'id': 1,
+      'pages': 450,
+      'title': 'Runaway Horses',
+      'cover': null,
+      'Authors': [{
         'given_names': 'Yukio',
-        'id': 3,
+        'id': 2,
         'surname': 'Mishima',
+        'profile_picture': null,
+        'country_origin': 'Japan',
+        'bio': null,
+        'book_author': {
+          'author_id': 1,
+          'book_id': 2,
+          'createdAt': expect.any(String),
+          'updatedAt': expect.any(String)
+        }
       }],
     });
   });
