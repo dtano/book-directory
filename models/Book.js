@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'Untitled'
     },
     pages: DataTypes.INTEGER,
-    date_published: DataTypes.DATE,
+    date_published: DataTypes.DATEONLY,
     cover: DataTypes.STRING,
   }, {
     sequelize,

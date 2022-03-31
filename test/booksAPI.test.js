@@ -149,7 +149,7 @@ describe('Update author general information and delete author', () => {
   it('Fail to delete an author entry that does not exist', async () => {
     const response = await request(app).delete(`/api/author/${nonExistantAuthorId}`);
     expect(response.statusCode).toBe(400);
-    expect(response.body).toStrictEqual(`Author with id = ${nonExistantAuthorId} not found`);
+    expect(response.body).toStrictEqual(`Failed to delete entry with id = ${nonExistantAuthorId}`);
   });
 });
 
@@ -192,18 +192,18 @@ describe('Book post route', () => {
       date_published: '1989-03-22',
       author_ids: authorIds,
     });
+    console.log(authorIds);
     expect(response.statusCode).toBe(400);
-    expect(response.body).toStrictEqual('The given entry already exists in the database');
+    expect(response.body).toStrictEqual('Duplicate book already exists');
   });
 
   it('Allow duplicate titles, but different author', async () => {
     const createAuthorResponse = await request(app).post('/api/author').send({
       given_names: 'Brandon',
       surname: 'Sanderson',
-      country: 'USA',
+      country_origin: 'USA',
     });
     authorIds.push(createAuthorResponse.body.id);
-
     const response = await request(app).post('/api/book').send({
       title: 'Runaway Horses',
       pages: 200,
@@ -242,6 +242,7 @@ describe('Book post route', () => {
   });
 
   it('Allow a book to be created with multiple authors', async () => {
+    console.log(authorIds);
     const response = await request(app).post('/api/book').send({
       title: 'Some random book',
       pages: 500,
@@ -249,13 +250,7 @@ describe('Book post route', () => {
       author_ids: authorIds,
     });
     expect(response.statusCode).toBe(200);
-    expect(response.body).toStrictEqual({
-      'date_published': '1975-01-01',
-      'id': 3,
-      'pages': 500,
-      'title': 'Some random book',
-      'cover': null,
-    });
+    expect(response.body.Authors.length).toBe(authorIds.length);
   });
 });
 
@@ -264,7 +259,7 @@ describe('Get book route', () => {
     const response = await request(app).get(`/api/book/${bookId}`);
     expect(response.statusCode).toBe(200);
     expect(response.body).toStrictEqual({
-      'date_published': '1989-03-22T00:00:00.000Z',
+      'date_published': '1989-03-22',
       'id': 1,
       'pages': 450,
       'title': 'Runaway Horses',
@@ -406,10 +401,11 @@ describe('Delete book route', () => {
 
   it('Fails to delete an entry with a non-existent ID', async () => {
     const response = await request(app).delete(`/api/book/multiple`).send({
-      deleteIDs: [1],
+      deleteIDs: [1000],
     });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
     expect(response.body).toBeDefined();
+    expect(response.body.failedIds.length).toBe(1);
   });
 
   it('Does not proceed with deleting when body is empty', async () => {

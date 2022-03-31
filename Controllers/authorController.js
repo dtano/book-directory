@@ -55,7 +55,7 @@ const getAllAuthors = async (req, res) => {
 const getAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
-    const author = await findAuthorWithId(authorId);
+    const author = await findAuthor({id: authorId});
     
     if (isNullOrEmpty(author)) {
       throw new Error(`author with id = ${authorId} not found`);
@@ -76,7 +76,7 @@ const updateAuthor = async (req, res) => {
     }
     
     // Get entry to update
-    const author = await findAuthorWithId(authorId);
+    const author = await findAuthor({id: authorId});
     
     if (req.file != null) {
       deleteProfilePicture(author.profile_picture);
@@ -99,7 +99,7 @@ const updateAuthor = async (req, res) => {
 const deleteAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
-    const author = await findAuthorWithId(authorId);
+    const author = await findAuthor({id: authorId});
 
     const numDeletedEntries = await Author.destroy({
       where: {
@@ -122,16 +122,12 @@ const deleteAuthor = async (req, res) => {
   }
 };
 
-const findAuthorWithId = async (authorId) => {
+const findAuthor = async (queryConditions) => {
   // Get entry to update
   const author = await Author.findOne({
-    where: {id: authorId},
+    where: queryConditions,
     include: Book,
   });
-  
-  if (isNullOrEmpty(author)) {
-    throw new Error(`Author with id = ${authorId} not found`);
-  }
 
   return author;
 }

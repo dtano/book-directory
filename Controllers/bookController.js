@@ -21,11 +21,6 @@ const postBook = async (req, res) => {
       throw new Error('At least one of the specified authors does not exist in the database');
     }
 
-    // Need to look for duplicates
-    if (await checkDupEntry(req.body, 'books')) {
-      throw new Error('The given entry already exists in the database');
-    }
-
     // Add the cover image file path to the query body if there is an image attached
     const coverImgName = req.file != null ? req.file.filename : null;
     const queryBody = {
@@ -37,17 +32,16 @@ const postBook = async (req, res) => {
 
     // Create book instance
     // Might have to tweak this somehow
-    const [row, created] = await Book.findOrCreate({
+    const [book, created] = await Book.findOrCreate({
       where: queryBody,
     });
 
     if(!created){
-      throw new Error('Duplicate author entry');
+      throw new Error('Duplicate book already exists');
     }
 
     // Then link the book to the author by creating an entry in the book_author table
-    // const bookAuthorLink = await linkBookToAuthor(newBook.rows[0].id, req.body.author_id);
-    const bookWithAuthors = await linkBookToAuthors(row, req.body.author_ids);
+    const bookWithAuthors = await linkBookToAuthors(book, req.body.author_ids);
 
     if (isNullOrEmpty(bookWithAuthors)) {
       throw new Error('Failed to establish a link between book and author(s)');
@@ -59,6 +53,7 @@ const postBook = async (req, res) => {
     if (req.file != null) {
       deleteFile(`${bookCoverPath}${req.file.filename}`);
     }
+    console.log(err.message);
     res.status(400).json(err.message);
   }
 };
@@ -251,32 +246,40 @@ const updateBookAuthor = async (req, res) => {
 // Delete specified book entries from the database
 const deleteMultipleBooks = async (req, res) => {
   try {
-    // req.body should hold a list of ids to delete
-    const {deleteIDs} = req.body;
-    if (!deleteIDs || deleteIDs.length === 0) {
-      throw new Error('No ids to delete');
+    const {deleteIDs: bookIdsToDelete} = req.body;
+    if (isNullOrEmpty(bookIdsToDelete)) {
+      throw new Error('No books to delete');
     }
-    // Map the ids into its '$' numbers for the database query
-    const delTupes = deleteIDs.map((id, index) => `$${index + 1}`);
-    const objsToDelete = delTupes.join(', ');
 
-    const delQuery = `DELETE FROM books WHERE id IN (${objsToDelete}) RETURNING *`;
-    const removed = await pool.query(delQuery, deleteIDs);
+    const booksToDelete = await Book.findAll({
+      where: {
+        id: bookIdsToDelete,
+      },
+      include: Author,
+    });
 
-    // This means that the given ids don't exist
-    if (removed.rows.length == 0) {
-      throw new Error(`The given ids were not deleted ${ deleteIDs }`);
-    } else if (removed.rows.length != deleteIDs.length) {
-      // Find out which entry was not deleted
-      const success = removed.rows.map((entry) => entry.book_id);
-      const failed = deleteIDs.filter((id) => !success.includes(id));
+    if(booksToDelete.length != bookIdsToDelete.length){
+      // Find the ids that are not legal
+      const existingBookIds = booksToDelete.map((book) => book.id);
+      const nonExistantBookIds = bookIdsToDelete.filter((id) => !existingBookIds.includes(id));
+
       res.status(404).json({
-        entriesDeleted: success,
-        failedDeletes: failed,
+        failedIds: nonExistantBookIds,
       });
-    } else {
-      res.status(200).json(removed.rows);
+
+      return;
     }
+
+    for(const book of booksToDelete)
+    {
+      if(book.cover != null){
+        deleteFile(`${bookCoverPath}${book.cover}`);
+      }
+      
+      await book.destroy();
+    }
+
+    res.status(200).json(booksToDelete);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -285,7 +288,7 @@ const deleteMultipleBooks = async (req, res) => {
 const getBook = async (req, res) => {
   const {id: bookId} = req.params;
   try {
-    const book = await findBookWithId(bookId);
+    const book = await findBook({id: bookId});
     
     if (isNullOrEmpty(book)) {
       throw new Error(`Book with id = ${bookId} not found`);
@@ -298,19 +301,27 @@ const getBook = async (req, res) => {
 };
 
 const deleteBook = async (req, res) => {
-  const {id} = req.params;
+  const {id: bookId} = req.params;
   try {
-    const deletedEntry = await pool.query('DELETE FROM books WHERE id = ($1) RETURNING *', [id]);
-    if (deletedEntry.rows.length == 0) {
-      throw new Error(`There is possibly no entry with id = ${id}`);
+    const book = await findBook({id: bookId});
+
+    const isBookDeleted = await Author.destroy({
+      where: {
+        id: bookId,
+      }
+    });
+
+    if(!isBookDeleted){
+      throw new Error(`Failed to delete book with id: ${bookId}`);
     }
 
     // Delete cover image here
-    if (deletedEntry.rows[0].cover != null) {
-      deleteFile(`${bookCoverPath}${deletedEntry.rows[0].cover}`);
+    const coverPicturePath = book.cover;
+    if (coverPicturePath != null) {
+      deleteFile(`${bookCoverPath}${coverPicturePath}`);
     }
 
-    res.status(200).json(deletedEntry.rows[0]);
+    res.status(200).json(book);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -361,12 +372,10 @@ const uploadCoverImage = async (req, res) => {
   }
 };
 
-const findBookWithId = async (bookId) => {
+const findBook = async (queryConditions) => {
   const book = await Book.findOne({
-    where: {
-      id: bookId,
-    },
-    include: Author
+    where: queryConditions,
+    include: Author,
   });
 
   return book;

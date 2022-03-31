@@ -17,7 +17,7 @@ module.exports = {
         type: DataTypes.INTEGER,
       },
       date_published: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
       },
       cover: {
         type: DataTypes.STRING,
