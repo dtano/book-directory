@@ -192,7 +192,7 @@ describe('Book post route', () => {
       date_published: '1989-03-22',
       author_ids: authorIds,
     });
-    console.log(authorIds);
+    
     expect(response.statusCode).toBe(400);
     expect(response.body).toStrictEqual('Duplicate book already exists');
   });
@@ -211,12 +211,20 @@ describe('Book post route', () => {
       author_ids: [authorIds[1]],
     });
     expect(response.statusCode).toBe(200);
-    expect(response.body).toStrictEqual({
-      'date_published': '1975-01-01',
-      'id': 2,
-      'pages': 200,
-      'title': 'Runaway Horses',
-      'cover': null,
+    expect(response.body).toBeDefined();
+    expect(response.body.Authors[0]).toStrictEqual({
+      'id': 3,
+      'given_names': 'Brandon',
+      'surname': 'Sanderson',
+      'profile_picture': null,
+      'country_origin': 'USA',
+      'bio': null,
+      'book_author': {
+        'author_id': 2,
+        'book_id': 3,
+        'createdAt': expect.any(String),
+        'updatedAt': expect.any(String),
+      }
     });
   });
 

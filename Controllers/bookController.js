@@ -1,6 +1,6 @@
 const {pool} = require('../config/db_setup');
 const {Author, Book} = require('../models/');
-const {isNullOrEmpty, checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, getBookAuthor, checkAuthorPresence, deleteFile} = require('./general');
+const {isNullOrEmpty, checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, getBookAuthor, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
 const format = require('pg-format');
 const path = require('path');
 
@@ -102,7 +102,7 @@ const removeAuthorsFromBook = async (bookID, authorsToRemove) => {
 
 // Update book entry with the values in the request body
 const updateBook = async (req, res) => {
-  const {id} = req.params;
+  const {id: bookId} = req.params;
   try {
     if (isNullOrEmpty(req.body)) {
       throw new Error('The body is empty');
@@ -123,13 +123,13 @@ const updateBook = async (req, res) => {
     // Check if there's a new image sent in the request
     if (req.file != null) {
       // Get entry to update
-      const book = await pool.query('SELECT * FROM books WHERE id = ($1)', [id]);
-      if (book.rows.length == 0) {
-        throw new Error(`Book with id = ${id} not found`);
+      const book = await findBook({id: bookId});
+      if (isNullOrEmpty(book)) {
+        throw new Error(`Book with id = ${bookId} not found`);
       }
 
       // Delete old picture
-      deleteFile(`${bookCoverPath}${book.rows[0].cover}`);
+      deleteFile(`${bookCoverPath}${book.cover}`);
 
       // Gotta change the book's cover image with the new filepath
       bookChanges.cover = req.file.filename;
@@ -139,13 +139,13 @@ const updateBook = async (req, res) => {
     let successfulUpdate = false;
 
     if (bookChanges != null) {
-      await changeBookDetails(bookChanges, id);
+      await changeBookDetails(bookChanges, bookId);
       successfulUpdate = true;
     }
 
     if (authorChange != null) {
       // Update the author if the body specified it
-      await changeAuthor(id, authorChange.authorsToRemove, authorChange.authorsToAdd);
+      await changeAuthor(bookId, authorChange.authorsToRemove, authorChange.authorsToAdd);
       // console.log("Author changed");
       successfulUpdate = true;
     }
@@ -161,27 +161,28 @@ const updateBook = async (req, res) => {
     if (req.file != null) {
       deleteFile(`${bookCoverPath}${req.file.filename}`);
     }
+    console.log(err.message);
     res.status(400).json(err.message);
   }
 };
 
 // Updates the specified book's general details (basically all details except the author)
-const changeBookDetails = async (updateBody, bookID) => {
+const changeBookDetails = async (updateBody, bookId) => {
   if (Object.keys(updateBody).length === 0) {
     throw new Error('No details to change are specified');
   }
 
-  const {query, values} = createUpdateQuery('books', {id: bookID}, updateBody);
-  const updatedEntry = await pool.query(query, values);
+  const [ rowsUpdated, [updatedBook] ] = await Book.validatedUpdate(updateBody, {returning: true, where: {id: bookId}});
+  console.log(updatedBook);
 
-  return updatedEntry.rows;
+  return updatedBook.dataValues;
 };
 
 // A function that allows changing the author(s) of a book
 const changeAuthor = async (bookID, authorsToRemove = [], authorsToAdd = []) => {
   // Get the book in question
   const bookToUpdate = await pool.query('SELECT * FROM books WHERE id = ($1)', [bookID]);
-  if (bookToUpdate.rows.length == 0) {
+  if (isNullOrEmpty(bookToUpdate)) {
     throw new Error(`Book with id = ${bookID} not found`);
   };
 

@@ -10,9 +10,21 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    // toJSON(){
-    //   return {...this.get(), id: undefined}
-    // }
+    static async validatedUpdate(updates, options){
+      const columnNames = Object.keys(Book.getAttributes);
+      console.log(columnNames);
+      const updateNames = Object.keys(updates);
+
+      updateNames.forEach(updateName => {
+        // throw an Error if we can't find one.
+        if (!columnNames.some((columnName) => columnName == updateName)) {
+          throw new Error(`The field ${updateName} does not exist.`);
+        }
+      });
+      
+      return this.update(updates, options);
+    }
+
   }
 
   Book.init({

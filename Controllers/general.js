@@ -206,6 +206,20 @@ const isNullOrEmpty = (obj) => {
   return obj == null || isEmpty(obj);
 }
 
+const validateRequestBody = (model, requestBody) => {
+  const columnNames = Object.keys(model.getAttributes);
+  const bodyColumnNames = Object.keys(requestBody);
+
+  bodyColumnNames.forEach(updateName => {
+    // throw an Error if we can't find one.
+    if (!columnNames.some((columnName) => columnName == updateName)) {
+      throw new Error(`The field ${updateName} does not exist.`);
+    }
+  });
+  
+  return true;
+}
+
 module.exports = {
   getAllEntries,
   completeStrip,
@@ -221,4 +235,5 @@ module.exports = {
   clearDirectory,
   isEmpty,
   isNullOrEmpty,
+  validateRequestBody
 };
