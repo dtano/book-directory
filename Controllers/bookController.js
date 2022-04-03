@@ -1,7 +1,6 @@
 const {pool} = require('../config/db_setup');
 const {Author, Book} = require('../models/');
-const {isNullOrEmpty, checkDupEntry, checkArrayContent, checkUniqueness, createUpdateQuery, getBookAuthor, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
-const format = require('pg-format');
+const {isNullOrEmpty, checkArrayContent, checkUniqueness, createUpdateQuery, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
 const path = require('path');
 
 const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
@@ -105,9 +104,6 @@ const removeAuthorsFromBook = async (book, authorsToRemove) => {
     await book.removeAuthor(authorToRemove);
     successfulRemovals.push(authorId);
   }
-  
-  // const query = format(`DELETE FROM book_author WHERE book_id = ${book} AND author_id IN (%L) RETURNING *`, authorsToRemove);
-  // const removed = await pool.query(query, []);
 
   return successfulRemovals;
 };
@@ -193,24 +189,17 @@ const changeAuthor = async (bookToUpdate, authorsToRemove = [], authorsToAdd = [
     throw new Error(`Given book to update is null`);
   };
 
-  // Get the author(s) of the book
-  // const bookAuthors = await getBookAuthor(bookID);
-  // const bookAuthorIDs = bookAuthors.map((author) => author.id);
-
   const bookAuthorIds = bookToUpdate.Authors.map((author) => author.dataValues.id);
-  console.log(`authorsToRemove: ${authorsToRemove}\nbookAuthorIds: ${bookAuthorIds}`);
 
   // Checks whether all ids in authorsToRemove is present in the array of authors for this book
   if (authorsToRemove.length > 0 && !checkArrayContent(bookAuthorIds, authorsToRemove)) {
     throw new Error('Invalid author ids to remove');
   }
 
-  console.log(bookAuthorIds);
-
   // Verify whether the author ids to add are authors that exist in the database
   if (authorsToAdd.length > 0) {
     // Look for the author in the authors table using their id
-    const authorValid = await checkAuthorPresence(authorsToAdd);
+    const [authorValid, foundAuthors] = await checkAuthorPresence(authorsToAdd);
     
     if (!authorValid) {
       throw new Error('At least one of the authors to add don\'t exist in the database');
@@ -222,33 +211,11 @@ const changeAuthor = async (bookToUpdate, authorsToRemove = [], authorsToAdd = [
     }
   }
 
-  // Delete corresponding book_author entry
   const removed = await removeAuthorsFromBook(bookToUpdate, authorsToRemove);
 
-  // Create new entries in the book_author table
   const added = await linkBookToAuthors(bookToUpdate, authorsToAdd);
 
   return added;
-};
-
-
-// Update author route
-/*
-    body = {
-        authorsToRemove: [],
-        authorsToAdd: []
-    }
-*/
-const updateBookAuthor = async (req, res) => {
-  const {id} = req.params;
-  try {
-    const updatedBook = await changeAuthor(id, req.body.authorsToRemove, req.body.authorsToAdd);
-
-    // Send to response
-    res.status(200).json(updatedBook);
-  } catch (err) {
-    res.status(400).json(err.message);
-  }
 };
 
 // Delete specified book entries from the database
@@ -361,7 +328,6 @@ const uploadCoverImage = async (req, res) => {
 
     // Update the book with the new cover image
     const newCover = req.file != null ? req.file.filename : null;
-    console.log(newCover);
 
     const {query, values} = createUpdateQuery('books', {id: id}, {cover: newCover});
     const updatedEntry = await pool.query(query, values);
@@ -411,5 +377,4 @@ module.exports = {
   getBook,
   getAllBooks,
   uploadCoverImage,
-  updateBookAuthor,
 };

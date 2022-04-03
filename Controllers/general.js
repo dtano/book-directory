@@ -60,6 +60,8 @@ const checkAuthorPresence = async (authorIds = []) => {
     }
   });
 
+  console.log(`Found authors: ${authors}`);
+
   if (authors.length === authorIds.length) {
     // Means that all authors are valid
     return [true, authors];
