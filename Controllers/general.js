@@ -207,17 +207,22 @@ const isNullOrEmpty = (obj) => {
 }
 
 const validateRequestBody = (model, requestBody) => {
-  const columnNames = Object.keys(model.getAttributes);
   const bodyColumnNames = Object.keys(requestBody);
+  if(Object.keys(bodyColumnNames).length == 0){
+    throw new Error('Request body is empty');
+  }
+
+  const columnNames = Object.keys(model.rawAttributes);
+  let isBodyAccurate = true;
 
   bodyColumnNames.forEach(updateName => {
     // throw an Error if we can't find one.
     if (!columnNames.some((columnName) => columnName == updateName)) {
-      throw new Error(`The field ${updateName} does not exist.`);
+      isBodyAccurate = false;
     }
   });
   
-  return true;
+  return isBodyAccurate;
 }
 
 module.exports = {

@@ -319,7 +319,7 @@ describe('Update book route', () => {
     //     "title": "New Title",
     // });
 
-    expect(response.body).toStrictEqual('Successful update');
+    expect(response.body.title).toBe('New Title');
   });
 
   it('Change multiple properties (pages and date)', async () => {
@@ -329,31 +329,24 @@ describe('Update book route', () => {
         date_published: '1985-04-03',
       },
     });
+    
     expect(response.statusCode).toBe(200);
-    // expect(response.body).toStrictEqual({
-    //     "id": 1,
-    //     "date_published": "1985-04-03",
-    //     "pages": 300,
-    //     "title": "New Title",
-    // });
-
-    expect(response.body).toStrictEqual('Successful update');
+    expect(response.body.pages).toBe(300);
+    expect(response.body.date_published).toBe('1985-04-03');
   });
 
   // Need to make a test for updating the author
   it('Change author to another author in the database', async () => {
-    // const getAllresponse = await request(app).get("/api/author");
-    // console.log(getAllresponse.body);
-
     const response = await request(app).put(`/api/book/${bookId}`).send({
       authorChange: {
-        authorsToRemove: [3],
-        authorsToAdd: [4],
+        authorsToRemove: [2],
+        authorsToAdd: [3],
       },
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toStrictEqual('Successful update');
+    expect(response.body.Authors.length).toBe(1);
+    expect(response.body.Authors[0].id).toBe(3);
   });
 
   it('Should fail to update if book changes and author change are not specified', async () => {
@@ -362,6 +355,7 @@ describe('Update book route', () => {
       title: 'Aussie Rules',
       country: 'Australia',
     });
+
     expect(response.statusCode).toBe(400);
     expect(response.body).toBeDefined();
   });
