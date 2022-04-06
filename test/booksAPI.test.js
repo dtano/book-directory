@@ -31,7 +31,7 @@ beforeAll(async () => {
   // });
   
   // Delete table
-  await pool.query(`TRUNCATE TABLE ${tableName}, authors, book_author RESTART IDENTITY`);
+  // await pool.query(`TRUNCATE TABLE ${tableName}, authors, book_author RESTART IDENTITY`);
 
   clearDirectories();
 });

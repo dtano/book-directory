@@ -27,6 +27,6 @@ module.exports = {
     });
   },
   async down(queryInterface, DataTypes) {
-    await queryInterface.dropTable('books');
+    await queryInterface.dropTable('books', {truncate: true, restartIdentity: true});
   }
 };

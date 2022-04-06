@@ -30,6 +30,6 @@ module.exports = {
     });
   },
   async down(queryInterface, DataTypes) {
-    await queryInterface.dropTable('authors');
+    await queryInterface.dropTable('authors', {truncate: true, restartIdentity: true});
   }
 };

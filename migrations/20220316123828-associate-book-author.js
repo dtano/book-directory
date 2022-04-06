@@ -20,6 +20,6 @@ module.exports = {
   },
 
   async down (queryInterface, DataTypes) {
-    return queryInterface.dropTable('book_author');
+    return queryInterface.dropTable('book_author', {truncate: true, restartIdentity: true});
   }
 };

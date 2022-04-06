@@ -12,7 +12,6 @@ module.exports = (sequelize, DataTypes) => {
 
     static async validatedUpdate(updates, options){
       const columnNames = Object.keys(Book.getAttributes);
-      console.log(columnNames);
       const updateNames = Object.keys(updates);
 
       updateNames.forEach(updateName => {
