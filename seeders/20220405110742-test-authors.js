@@ -22,6 +22,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-     return queryInterface.bulkDelete('authors', null, {truncate:true, restartIdentity: true});
+     return queryInterface.bulkDelete('authors', null, {truncate: true, restartIdentity: true});
   }
 };

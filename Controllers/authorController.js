@@ -6,6 +6,7 @@ const path = require('path');
 const authorImgPath = path.join(__dirname, '../public/uploads/authors/');
 
 const expectedRequestKeys = ['given_names', 'surname', 'country_origin', 'bio', 'profile_picture'];
+const notNullableColumns = ['given_names', 'surname'];
 
 
 // Create a new author entry
@@ -74,6 +75,9 @@ const updateAuthor = async (req, res) => {
     if(isEmpty(req.body)){
       throw new Error(`Request body is empty`);
     }
+
+    // Need to validate request body
+    if(!validateAuthorRequestBody(req.body)) throw new Error('Request body is not valid');
     
     // Get entry to update
     const author = await findAuthor({id: authorId});
@@ -104,7 +108,7 @@ const deleteAuthor = async (req, res) => {
     const numDeletedEntries = await Author.destroy({
       where: {
         id: authorId,
-      }
+      },
     });
     
     if (numDeletedEntries == 0) {
@@ -133,13 +137,18 @@ const findAuthor = async (queryConditions) => {
 }
 
 const validateAuthorRequestBody = (body) => {
-  let isValid = true;
-  Object.keys(body).forEach(key => {
-    // Find whether key exists in specified key list
-    if(!expectedRequestKeys.includes(key)) isValid = false;
-  });
+  const bodyKeys = Object.keys(body);
+  
+  for(const key of bodyKeys){
+    if(!expectedRequestKeys.includes(key)) return false;
 
-  return isValid;
+    if(notNullableColumns.includes(key) && isNullOrEmpty(body[key])){
+      // Now we need to make sure that the value is not empty or null
+      return false;
+    }
+  }
+
+  return true;
 }
 
 const deleteProfilePicture = (profilePicturePath) => {
