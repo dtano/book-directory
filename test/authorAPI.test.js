@@ -7,7 +7,7 @@ const UPLOAD_DIRECTORY = 'test/testUploads/authors';
 // Store the data to delete
 const generatedData = [];
 
-const DB_AUTHOR_COUNT = 3;
+const DB_AUTHOR_COUNT = 4;
 const DUPLICATE_AUTHOR_ERROR = 'Duplicate author entry';
 
 // Test values
@@ -20,6 +20,12 @@ const TEST_COUNTRY = 'France';
 
 let dummyAuthorId = 0;
 
+beforeAll(async() => {
+    const dummyAuthor = await createDummyAuthor();
+    dummyAuthorId = dummyAuthor.dataValues.id;
+    generatedData.push(dummyAuthor.dataValues);
+});
+
 afterAll(async () => {
     for(const data of generatedData){
         await Author.destroy({
@@ -31,23 +37,23 @@ afterAll(async () => {
     console.log('All generated data has been destroyed');
     generatedData.length = 0;
 
-    fs.emptyDirSync(UPLOAD_DIRECTORY)
+    fs.emptyDirSync(UPLOAD_DIRECTORY);
 });
 
 describe('Get author entry', () => {
-    test('Should get correct author by id', async () => {
+    it('Should get correct author by id', async () => {
         const response = await request(app).get(`/api/author/${AUTHOR_ID_TO_FIND}`);
         expect(response.statusCode).toBe(200);
         expect(response.body.id).toBe(1);
     });
 
-    test('Should fail to get an author with a non-existent id', async () => {
+    it('Should fail to get an author with a non-existent id', async () => {
         const response = await request(app).get(`/api/author/${INVALID_AUTHOR_ID}`);
         expect(response.statusCode).toBe(400);
         expect(response.body).toBeDefined();
     });
 
-    test('Should get all authors in the database', async () => {
+    it('Should get all authors in the database', async () => {
         const response = await request(app).get('/api/author');
         expect(response.statusCode).toBe(200);
         expect(response.body.length).toBe(DB_AUTHOR_COUNT);
@@ -55,21 +61,20 @@ describe('Get author entry', () => {
 });
 
 describe('Create author entry', () => {
-    test('Should create a new author entry, when given the correct request', async () => {
+    it('Should create a new author entry, when given the correct request', async () => {
         const requestBody = {
             given_names: TEST_GIVEN_NAMES,
             surname: TEST_SURNAME,
             country_origin: TEST_COUNTRY,
         }
         const response = await request(app).post('/api/author').send(requestBody);
-
+        generatedData.push(response.body);
+        
         expect(response.statusCode).toBe(200);
         expect(areBodyValuesEqual(requestBody, response.body)).toBe(true);
-        
-        generatedData.push(response.body);
     });
 
-    test('Should fail to create a duplicate author entry, when an author with the same name and country exists', async () => {
+    it('Should fail to create a duplicate author entry, when an author with the same name and country exists', async () => {
         const requestBody = {
             given_names: TEST_GIVEN_NAMES,
             surname: TEST_SURNAME,
@@ -82,7 +87,7 @@ describe('Create author entry', () => {
         expect(response.body).toStrictEqual(DUPLICATE_AUTHOR_ERROR);
     });
 
-    test('Should fail to create an author entry, when no surname is specified', async () => {
+    it('Should fail to create an author entry, when no surname is specified', async () => {
         const requestBody = {
             given_names: 'Darnell',
             country_origin: 'USA'
@@ -95,10 +100,7 @@ describe('Create author entry', () => {
 });
 
 describe('Update author entry', () => {
-    test('Should successfully update the country and given name of an author', async () => {
-        const dummyAuthor = await createDummyAuthor();
-        dummyAuthorId = dummyAuthor.dataValues.id;
-        
+    it('Should successfully update the country and given name of an author', async () => {
         const requestBody = {
             country_origin: 'Jamaica',
             given_names: 'Darren'
@@ -109,7 +111,7 @@ describe('Update author entry', () => {
         expect(response.statusCode).toBe(200);
     });
 
-    test('Should fail to update, when wrong properties are given', async () => {
+    it('Should fail to update, when wrong properties are given', async () => {
         const requestBody = {
             base: 'Chicago',
         }
@@ -119,7 +121,7 @@ describe('Update author entry', () => {
         expect(response.statusCode).toBe(400);
     });
 
-    test('Should fail to update, when the user attempts to erase their name', async () => {
+    it('Should fail to update, when the user attempts to erase their name', async () => {
         const requestBody = {
             given_names: '',
             surname: ''
@@ -132,14 +134,14 @@ describe('Update author entry', () => {
 });
 
 describe('Delete author entry', () => {
-    test('Should successfully delete author entry, when the correct id is given', async () => {
+    it('Should successfully delete author entry, when the correct id is given', async () => {
         const response = await request(app).delete(`/api/author/${dummyAuthorId}`);
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toStrictEqual(`Successfully deleted author with id: ${dummyAuthorId}`);
     });
 
-    test('Fail to delete an author entry that does not exist', async () => {
+    it('Fail to delete an author entry that does not exist', async () => {
         const response = await request(app).delete(`/api/author/${INVALID_AUTHOR_ID}`);
 
         expect(response.statusCode).toBe(400);

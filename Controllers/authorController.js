@@ -105,6 +105,10 @@ const deleteAuthor = async (req, res) => {
   try {
     const author = await findAuthor({id: authorId});
 
+    for(const book of author.dataValues.Books){
+      await author.removeBook(book);
+    }
+
     const numDeletedEntries = await Author.destroy({
       where: {
         id: authorId,
