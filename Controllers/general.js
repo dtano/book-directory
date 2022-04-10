@@ -227,6 +227,31 @@ const validateRequestBody = (model, requestBody) => {
   return isBodyAccurate;
 }
 
+const areArraysEqualSets = (a1, a2) => {
+  const superSet = {};
+  for (const element of a1) {
+    // This operation returns a concatenated string (e.g. 10number)
+    const elementTypeKey = element + typeof element;
+    superSet[elementTypeKey] = 1;
+  }
+
+  for (const element of a2) {
+    const elementTypeKey = element + typeof element;
+    if (!superSet[elementTypeKey]) {
+      return false;
+    }
+    superSet[elementTypeKey] = 2;
+  }
+
+  for (let elementTypeKey in superSet) {
+    if (superSet[elementTypeKey] === 1) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 module.exports = {
   getAllEntries,
   completeStrip,
@@ -242,5 +267,6 @@ module.exports = {
   clearDirectory,
   isEmpty,
   isNullOrEmpty,
-  validateRequestBody
+  validateRequestBody,
+  areArraysEqualSets
 };

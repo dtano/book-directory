@@ -1,7 +1,8 @@
 const {pool} = require('../config/db_setup');
 const {Author, Book} = require('../models/');
-const {isNullOrEmpty, checkArrayContent, checkUniqueness, createUpdateQuery, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
+const {areArraysEqualSets, isNullOrEmpty, checkArrayContent, checkUniqueness, createUpdateQuery, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
 const path = require('path');
+const { isNull } = require('util');
 
 const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
 const expectedRequestKeys = [...Object.keys(Book.rawAttributes), 'author_ids'];
@@ -28,16 +29,14 @@ const postBook = async (req, res) => {
       date_published: req.body.date_published,
       cover: coverImgName,
     };
-
-    // Create book instance
-    // Might have to tweak this somehow
-    const [book, created] = await Book.findOrCreate({
-      where: queryBody,
-    });
-
-    if(!created){
+    
+    // Find out if book is a duplicate
+    const isBookADuplicate = await isDuplicateBook(queryBody, req.body.author_ids)
+    if(isBookADuplicate){
       throw new Error('Duplicate book already exists');
     }
+
+    const book = await Book.create(queryBody);
 
     // Then link the book to the author by creating an entry in the book_author table
     const bookWithAuthors = await linkBookToAuthors(book, req.body.author_ids);
@@ -247,10 +246,12 @@ const deleteMultipleBooks = async (req, res) => {
 
     for(const book of booksToDelete)
     {
-      if(book.cover != null){
+      if(book.dataValues.cover != null){
         deleteFile(`${bookCoverPath}${book.cover}`);
       }
       
+      const authorsToRemove = book.dataValues.Authors.map(authorObj => authorObj.id);
+      await removeAuthorsFromBook(book, authorsToRemove);
       await book.destroy();
     }
 
@@ -279,6 +280,11 @@ const deleteBook = async (req, res) => {
   const {id: bookId} = req.params;
   try {
     const book = await findBook({id: bookId});
+
+    if(book == null) throw new Error(`Book with id = ${bookId} does not exist`);
+    
+    const authorIdsToRemove = book.dataValues.Authors.map(authorObj => authorObj.id);
+    await removeAuthorsFromBook(book, authorIdsToRemove);
 
     const isBookDeleted = await Author.destroy({
       where: {
@@ -367,6 +373,22 @@ const validateBookRequestBody = (body) => {
   });
 
   return isValid && areAuthorsSpecified;
+}
+
+const isDuplicateBook = async (bookDetails, authorIds) => {
+  const foundBook = await Book.findOne({
+    where: bookDetails, 
+    include: Author,
+  });
+
+  if(isNullOrEmpty(foundBook)) return false;
+
+  const possibleDuplicateAuthors = foundBook.dataValues.Authors;
+  
+  // Now compare authors
+  const possibleDuplicateAuthorsIds = possibleDuplicateAuthors.map(author => author.id);
+
+  return areArraysEqualSets(authorIds, possibleDuplicateAuthorsIds);
 }
 
 module.exports = {

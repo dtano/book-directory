@@ -83,24 +83,23 @@ describe('Post book entry', () => {
     expect(response.body).toStrictEqual('Duplicate book already exists');
   });
 
-  // it('Allow duplicate titles, but different author', async () => {
-  //   const requestBody = {
-  //     title: TEST_TITLE,
-  //     pages: TEST_PAGES,
-  //     date_published: TEST_DATE_PUBLISHED,
-  //     author_ids: [authorIds[1]],
-  //   }
+  it('Allow duplicate titles, but different author(s)', async () => {
+    const requestBody = {
+      title: TEST_TITLE,
+      pages: TEST_PAGES,
+      date_published: TEST_DATE_PUBLISHED,
+      author_ids: [authorIds[1]],
+    }
     
-  //   console.log(requestBody);
-  //   const response = await request(app).post('/api/book').send(requestBody);
-  //   console.log(response.body);
-  //   generatedData.push(response.body);
+    const response = await request(app).post('/api/book').send(requestBody);
+    console.log(response.body);
+    generatedData.push(response.body);
     
-  //   expect(response.statusCode).toBe(200);
-  //   expect(areBodyValuesEqual(requestBody, response.body)).toBe(true);
-  //   expect(response.body.Authors.length).toBeGreaterThan(0);
-  //   expect(response.body.Authors[0].id).toBe(authorIds[1]);
-  // });
+    expect(response.statusCode).toBe(200);
+    expect(areBodyValuesEqual(requestBody, response.body)).toBe(true);
+    expect(response.body.Authors.length).toBeGreaterThan(0);
+    expect(response.body.Authors[0].id).toBe(authorIds[1]);
+  });
 
   it('Should prevent from posting a book entry, when request body has wrong properties', async () => {
     const requestBody = {
