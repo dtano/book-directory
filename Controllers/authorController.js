@@ -105,7 +105,9 @@ const deleteAuthor = async (req, res) => {
   try {
     const author = await findAuthor({id: authorId});
 
-    for(const book of author.dataValues.Books){
+    if(author == null) throw new Error(`Author with id = ${authorId} does not exist`);
+
+    for(const book of author.Books){
       await author.removeBook(book);
     }
 

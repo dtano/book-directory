@@ -145,7 +145,7 @@ describe('Delete author entry', () => {
         const response = await request(app).delete(`/api/author/${INVALID_AUTHOR_ID}`);
 
         expect(response.statusCode).toBe(400);
-        expect(response.body).toStrictEqual(`Failed to delete entry with id = ${INVALID_AUTHOR_ID}`);
+        expect(response.body).toStrictEqual(`Author with id = ${INVALID_AUTHOR_ID} does not exist`);
     });
 });
 
