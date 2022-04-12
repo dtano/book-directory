@@ -8,7 +8,7 @@ const UPLOAD_DIRECTORY = 'test/testUploads/authors';
 const generatedData = [];
 
 const DB_AUTHOR_COUNT = 4;
-const DUPLICATE_AUTHOR_ERROR = 'Duplicate author entry';
+const DUPLICATE_AUTHOR_ERROR = 'Author with the given information already exists';
 
 // Test values
 const AUTHOR_ID_TO_FIND = 1;
