@@ -25,6 +25,12 @@ module.exports = {
       profile_picture: {
         type: DataTypes.STRING,
       },
+      birth_date: {
+        type: DataTypes.DATEONLY,
+      },
+      death_date: {
+        type: DataTypes.DATEONLY,
+      },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
     });

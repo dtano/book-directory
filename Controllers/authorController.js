@@ -5,10 +5,6 @@ const path = require('path');
 // Where images will be stored in the project directory
 const authorImgPath = path.join(__dirname, '../public/uploads/authors/');
 
-const notNullableColumns = ['given_names', 'surname'];
-const expectedRequestKeys = [...notNullableColumns, 'country_origin', 'bio', 'profile_picture'];
-
-
 // Create a new author entry
 const postAuthor = async (req, res) => {
   try {
@@ -66,8 +62,6 @@ const updateAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
     if(isEmpty(req.body)) throw new Error(`Request body is empty`);
-
-    if(!validateAuthorRequestBody(req.body)) throw new Error('Request body is not valid');
     
     if (req.file != null) req.body.profile_picture = req.file.filename;
 
@@ -85,13 +79,13 @@ const updateAuthor = async (req, res) => {
 const deleteAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
-    const {author, numDeletedEntries} = await authorService.deleteAuthor(authorId);
+    const {author: deletedAuthor, numDeletedEntries} = await authorService.deleteAuthor(authorId);
     
     if (numDeletedEntries == 0) {
       throw new Error(`Failed to delete entry with id = ${authorId}`);
     }
 
-    if (author.profile_picture != null) {
+    if (deletedAuthor.profile_picture != null) {
       deleteFile(`${authorImgPath}${profilePicturePath}`);
     }
 
@@ -105,21 +99,6 @@ const deleteProfilePicture = (profilePicturePath) => {
   if(profilePicturePath != null){
     deleteFile(`${authorImgPath}${profilePicturePath}`);
   }
-}
-
-const validateAuthorRequestBody = (body) => {
-  const bodyKeys = Object.keys(body);
-  
-  for(const key of bodyKeys){
-    if(!expectedRequestKeys.includes(key)) return false;
-
-    if(notNullableColumns.includes(key) && isNullOrEmpty(body[key])){
-      // Now we need to make sure that the value is not empty or null
-      return false;
-    }
-  }
-
-  return true;
 }
 
 module.exports = {

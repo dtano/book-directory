@@ -13,6 +13,7 @@ const DUPLICATE_AUTHOR_ERROR = 'Author with the given information already exists
 // Test values
 const AUTHOR_ID_TO_FIND = 1;
 const INVALID_AUTHOR_ID = 1000;
+const DATE_ERROR = 'Date of death can\'t be before date of birth';
 
 const TEST_GIVEN_NAMES = 'Dolores';
 const TEST_SURNAME = 'Barton';
@@ -66,6 +67,8 @@ describe('Create author entry', () => {
             given_names: TEST_GIVEN_NAMES,
             surname: TEST_SURNAME,
             country_origin: TEST_COUNTRY,
+            birth_date: '1900-01-01',
+            death_date: '1959-03-04',
         }
         const response = await request(app).post('/api/author').send(requestBody);
         generatedData.push(response.body);
@@ -90,13 +93,28 @@ describe('Create author entry', () => {
     it('Should fail to create an author entry, when no surname is specified', async () => {
         const requestBody = {
             given_names: 'Darnell',
-            country_origin: 'USA'
+            country_origin: 'USA',
         }
 
         const response = await request(app).post('/api/author').send(requestBody);
 
         expect(response.statusCode).toBe(400);
     });
+
+    it('Should fail to create an author entry, when the birth and death dates do not line up', async () => {
+        const requestBody = {
+            given_names: 'Darnell',
+            surname: 'Smothers',
+            country_origin: 'USA',
+            birth_date: '1945-02-02',
+            death_date: '1945-01-31',
+        }
+
+        const response = await request(app).post('/api/author').send(requestBody);
+        console.log(response.body);
+        expect(response.statusCode).toBe(400);
+        expect(response.body).toBe(DATE_ERROR);
+    })
 });
 
 describe('Update author entry', () => {

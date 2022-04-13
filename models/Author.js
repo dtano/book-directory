@@ -1,5 +1,6 @@
 'use strict';
 const {Model} = require('sequelize');
+const authorValidator = require('../services/validators/authorValidator');
 
 module.exports = (sequelize, DataTypes) => {
   class Author extends Model {
@@ -25,20 +26,39 @@ module.exports = (sequelize, DataTypes) => {
   Author.init({
     given_names: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      }
     },
     surname: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      }
     },
-    country_origin: DataTypes.STRING,
+    country_origin: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      }
+    },
     bio: DataTypes.TEXT,
     profile_picture: DataTypes.STRING,
+    birth_date: DataTypes.DATEONLY,
+    death_date: DataTypes.DATEONLY
   }, {
     sequelize,
     timestamps: false,
     tableName: 'authors',
     modelName: 'Author',
+    hooks: {
+      beforeCreate: function (author, options){
+        authorValidator.validate(author);
+      }
+    }
   });
   return Author;
 };
