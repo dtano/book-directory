@@ -13,7 +13,7 @@ const DUPLICATE_AUTHOR_ERROR = 'Author with the given information already exists
 // Test values
 const AUTHOR_ID_TO_FIND = 1;
 const INVALID_AUTHOR_ID = 1000;
-const DATE_ERROR = 'Date of death can\'t be before date of birth';
+const DATE_ERROR = 'Validation error: Date of death must be greater than date of birth';
 
 const TEST_GIVEN_NAMES = 'Dolores';
 const TEST_SURNAME = 'Barton';

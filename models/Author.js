@@ -48,17 +48,22 @@ module.exports = (sequelize, DataTypes) => {
     bio: DataTypes.TEXT,
     profile_picture: DataTypes.STRING,
     birth_date: DataTypes.DATEONLY,
-    death_date: DataTypes.DATEONLY
+    death_date: {
+      type: DataTypes.DATEONLY, 
+      validate: {
+        isDeathDateGreaterThanBirthDate(value) {
+          if(value === null && this.birth_date === null) return;
+          if (new Date(value) <= new Date(this.birth_date)) {
+            throw new Error('Date of death must be greater than date of birth');
+          }
+        }
+      }
+    },
   }, {
     sequelize,
     timestamps: false,
     tableName: 'authors',
     modelName: 'Author',
-    hooks: {
-      beforeCreate: function (author, options){
-        authorValidator.validate(author);
-      }
-    }
   });
   return Author;
 };

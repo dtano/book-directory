@@ -1,9 +1,5 @@
 const {Author, Book} = require('../models/');
 const {isEmpty, isNullOrEmpty, deleteFile} = require('../controllers/general');
-const path = require('path');
-
-// Where images will be stored in the project directory
-const authorImgPath = path.join(__dirname, '../public/uploads/authors/');
 
 const authorService = {
     createAuthor: async (details) => {
@@ -72,13 +68,6 @@ const authorService = {
         });
 
         return {author, numDeletedEntries};
-    }
-}
-
-const updateAuthorInstance = (author, newInformation) => {
-    const keys = Object.keys(newInformation);
-    for(const key of keys){
-        author[key] = newInformation[key];
     }
 }
 

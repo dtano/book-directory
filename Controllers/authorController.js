@@ -11,16 +11,13 @@ const postAuthor = async (req, res) => {
     if(isNullOrEmpty(req.body)) throw new Error('Request body is empty');
     
     // Add the author image file path to the query body if there is an image attached
-    const authorImg = {profile_picture: req.file != null ? req.file.filename : null};
-    req.body.profile_picture = authorImg.profile_picture;
+    req.body.profile_picture = req.file != null ? req.file.filename : null;
 
     const createdAuthor = await authorService.createAuthor(req.body);
     
     res.status(200).json(createdAuthor.toJSON());
   } catch (err) {
-    if (req.file != null) {
-      deleteFile(`${authorImgPath}${req.file.filename}`);
-    }
+    if (req.file != null) deleteProfilePicture(req.file.filename);
     res.status(400).json(err.message);
   }
 };
@@ -81,13 +78,11 @@ const deleteAuthor = async (req, res) => {
   try {
     const {author: deletedAuthor, numDeletedEntries} = await authorService.deleteAuthor(authorId);
     
-    if (numDeletedEntries == 0) {
+    if (numDeletedEntries === 0) {
       throw new Error(`Failed to delete entry with id = ${authorId}`);
     }
 
-    if (deletedAuthor.profile_picture != null) {
-      deleteFile(`${authorImgPath}${profilePicturePath}`);
-    }
+    deleteProfilePicture(deletedAuthor.profile_picture);
 
     res.status(200).json(`Successfully deleted author with id: ${authorId}`);
   } catch (err) {
@@ -95,9 +90,9 @@ const deleteAuthor = async (req, res) => {
   }
 };
 
-const deleteProfilePicture = (profilePicturePath) => {
-  if(profilePicturePath != null){
-    deleteFile(`${authorImgPath}${profilePicturePath}`);
+const deleteProfilePicture = (profilePictureName) => {
+  if(profilePictureName != null){
+    deleteFile(`${authorImgPath}${profilePictureName}`);
   }
 }
 
