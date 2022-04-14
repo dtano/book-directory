@@ -32,7 +32,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'Untitled'
     },
-    pages: DataTypes.INTEGER,
+    pages: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      }
+    },
     date_published: DataTypes.DATEONLY,
     cover: DataTypes.STRING,
   }, {

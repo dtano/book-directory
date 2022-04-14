@@ -1,8 +1,8 @@
 const {pool} = require('../config/db_setup');
 const {Author, Book} = require('../models/');
 const {areArraysEqualSets, isNullOrEmpty, checkArrayContent, checkUniqueness, createUpdateQuery, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
+const bookValidator = require('../services/validators/bookValidator');
 const path = require('path');
-const { isNull } = require('util');
 
 const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
 const expectedRequestKeys = [...Object.keys(Book.rawAttributes), 'author_ids'];
@@ -10,17 +10,8 @@ const expectedRequestKeys = [...Object.keys(Book.rawAttributes), 'author_ids'];
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
   try {
-    // Check if author is specified
-    if (!validateBookRequestBody(req.body)) {
-      throw new Error('No author(s) specified');
-    }
-
-    // This assumes that author_id is an array of IDs
-    [allAuthorsExist, authors] = await checkAuthorPresence(req.body.author_ids);
-    if (!allAuthorsExist) {
-      throw new Error('At least one of the specified authors does not exist in the database');
-    }
-
+    await bookValidator.validate(req.body);
+    
     // Add the cover image file path to the query body if there is an image attached
     const coverImgName = req.file != null ? req.file.filename : null;
     const queryBody = {
