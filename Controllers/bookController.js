@@ -1,11 +1,12 @@
 const {pool} = require('../config/db_setup');
-const {Author, Book} = require('../models/');
-const {areArraysEqualSets, isNullOrEmpty, checkArrayContent, checkUniqueness, createUpdateQuery, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
-const bookValidator = require('../services/validators/bookValidator');
 const path = require('path');
+const {Author, Book} = require('../models/');
+const {isNullOrEmpty, checkArrayContent, checkUniqueness, createUpdateQuery, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
+
+const bookValidator = require('../services/validators/bookValidator');
+const bookService = require('../services/bookService');
 
 const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
-const expectedRequestKeys = [...Object.keys(Book.rawAttributes), 'author_ids'];
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
@@ -20,29 +21,15 @@ const postBook = async (req, res) => {
       date_published: req.body.date_published,
       cover: coverImgName,
     };
-    
-    // Find out if book is a duplicate
-    const isBookADuplicate = await isDuplicateBook(queryBody, req.body.author_ids)
-    if(isBookADuplicate){
-      throw new Error('Duplicate book already exists');
-    }
 
-    const book = await Book.create(queryBody);
+    const book = await bookService.createBook(queryBody, req.body.author_ids);
 
-    // Then link the book to the author by creating an entry in the book_author table
-    const bookWithAuthors = await linkBookToAuthors(book, req.body.author_ids);
-
-    if (isNullOrEmpty(bookWithAuthors)) {
-      throw new Error('Failed to establish a link between book and author(s)');
-    }
-
-    res.status(200).json(bookWithAuthors);
+    res.status(200).json(book);
   } catch (err) {
     // If there was an error and the request had a file, then delete it
     if (req.file != null) {
       deleteFile(`${bookCoverPath}${req.file.filename}`);
     }
-    console.log(err.message);
     res.status(400).json(err.message);
   }
 };
@@ -255,7 +242,7 @@ const deleteMultipleBooks = async (req, res) => {
 const getBook = async (req, res) => {
   const {id: bookId} = req.params;
   try {
-    const book = await findBook({id: bookId});
+    const book = await bookService.findBook({id: bookId});
     
     if (isNullOrEmpty(book)) {
       throw new Error(`Book with id = ${bookId} not found`);
@@ -303,9 +290,7 @@ const deleteBook = async (req, res) => {
 // On error, it simply returns a blank array
 const getAllBooks = async (req, res) => {
   try {
-    const allBooks = await Book.findAll({
-      include: Author,
-    });
+    const allBooks = await bookService.findAllBooks();
     
     res.status(200).json(allBooks);
   } catch (err) {
@@ -350,36 +335,6 @@ const findBook = async (queryConditions) => {
   });
 
   return book;
-}
-
-const validateBookRequestBody = (body) => {
-  let isValid = true;
-  let areAuthorsSpecified = false;
-  
-  Object.keys(body).forEach(key => {
-    // Find whether key exists in specified key list
-    if(!expectedRequestKeys.includes(key)) isValid = false;
-
-    if(key == 'author_ids') areAuthorsSpecified = true;
-  });
-
-  return isValid && areAuthorsSpecified;
-}
-
-const isDuplicateBook = async (bookDetails, authorIds) => {
-  const foundBook = await Book.findOne({
-    where: bookDetails, 
-    include: Author,
-  });
-
-  if(isNullOrEmpty(foundBook)) return false;
-
-  const possibleDuplicateAuthors = foundBook.dataValues.Authors;
-  
-  // Now compare authors
-  const possibleDuplicateAuthorsIds = possibleDuplicateAuthors.map(author => author.id);
-
-  return areArraysEqualSets(authorIds, possibleDuplicateAuthorsIds);
 }
 
 module.exports = {

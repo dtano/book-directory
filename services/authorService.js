@@ -1,5 +1,4 @@
 const {Author, Book} = require('../models/');
-const {isEmpty, isNullOrEmpty, deleteFile} = require('../controllers/general');
 
 const authorService = {
     createAuthor: async (details) => {
