@@ -182,7 +182,7 @@ describe('Update book entry', () => {
   // // Need to make a test for updating the author
   it('Should change author to another author in the database', async () => {
     const requestBody = {
-      authorChange: {
+      authorChanges: {
         authorsToRemove: book_author_mapping[bookToUpdateId],
         authorsToAdd: [REPLACEMENT_AUTHOR_ID],
       }

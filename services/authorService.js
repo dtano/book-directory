@@ -1,4 +1,5 @@
 const {Author, Book} = require('../models/');
+const Op = require('../models/index').Sequelize.Op; 
 
 const authorService = {
     createAuthor: async (details) => {
@@ -67,6 +68,24 @@ const authorService = {
         });
 
         return {author, numDeletedEntries};
+    },
+
+    checkAuthorPresence: async (authorIds = []) => {
+        if (authorIds.length === 0) {
+            throw new Error('No authors specified');
+        }
+    
+        const authors = await authorService.findAllAuthors({
+            id: {
+                [Op.in]: authorIds, 
+            }
+        });
+    
+        if (authors.length === authorIds.length) {
+        // Means that all authors are valid
+            return [true, authors];
+        }
+        return [false, null];
     }
 }
 

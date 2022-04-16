@@ -60,11 +60,15 @@ const updateAuthor = async (req, res) => {
   try {
     if(isEmpty(req.body)) throw new Error(`Request body is empty`);
     
-    if (req.file != null) req.body.profile_picture = req.file.filename;
+    let isProfilePictureUpdated = false;
+    if (req.file != null){
+      req.body.profile_picture = req.file.filename;
+      isProfilePictureUpdated = true;
+    }
 
     const {updatedAuthor, previousValues} = await authorService.updateAuthor(authorId, req.body);
 
-    deleteProfilePicture(previousValues.profile_picture);
+    if(isProfilePictureUpdated) deleteProfilePicture(previousValues.profile_picture);
     
     res.status(200).json(updatedAuthor.toJSON());
   } catch (err) {

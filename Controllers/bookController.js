@@ -93,52 +93,31 @@ const updateBook = async (req, res) => {
       throw new Error('The body is empty');
     }
 
-    let book = await findBook({id: bookId});
-    if (isNullOrEmpty(book.dataValues)) {
-      throw new Error(`Book with id = ${bookId} not found`);
-    }
-
     // Use the one below if cover image uploads is included with the other details
     // var bookChanges = req.body.bookChanges != null ? JSON.parse(req.body.bookChanges) : null;
     // var authorChange = req.body.authorChange != null ? JSON.parse(req.body.authorChange) : null;
 
     // Use this if cover image upload is handled somewhere else
     const bookChanges = req.body.bookChanges != null ? req.body.bookChanges : null;
-    const authorChange = req.body.authorChange != null ? req.body.authorChange : null;
+    const authorChanges = req.body.authorChanges != null ? req.body.authorChanges : null;
 
-    if (bookChanges == null && authorChange == null) {
+    if (bookChanges == null && authorChanges == null) {
       throw new Error('The request body is not of the correct format');
     }
 
-    // Check if there's a new image sent in the request
+    let isBookCoverUpdated = false;
     if (req.file != null) {
-      // Delete old picture
-      if(book.cover != null) deleteFile(`${bookCoverPath}${book.cover}`);
-
-      // Gotta change the book's cover image with the new filepath
       bookChanges.cover = req.file.filename;
+      isBookCoverUpdated = true;
     }
 
-    // Update the general details of the book
-    let successfulUpdate = false;
+    const {book, previousBookValues} = await bookService.updateBook(bookId, bookChanges, authorChanges);
 
-    if (!isNullOrEmpty(bookChanges)) {
-      book = await changeBookDetails(bookChanges, book);
-      successfulUpdate = true;
+    if(isBookCoverUpdated) {
+      deleteCover(previousBookValues.cover);
     }
 
-    if (!isNullOrEmpty(authorChange)) {
-      // Update the author if the body specified it
-      book = await changeAuthor(book, authorChange.authorsToRemove, authorChange.authorsToAdd);
-      successfulUpdate = true;
-    }
-
-    if (successfulUpdate) {
-      // Can't return this if its just the author that is changed
-      res.status(200).json(book);
-    } else {
-      res.status(400).json('The request body contains the wrong keys');
-    }
+    res.status(200).json(book);
   } catch (err) {
     // If update was unsuccessful, then we'll need to delete any uploaded file
     if (req.file != null) {
@@ -147,52 +126,6 @@ const updateBook = async (req, res) => {
     console.log(err.message);
     res.status(400).json(err.message);
   }
-};
-
-// Updates the specified book's general details (basically all details except the author)
-const changeBookDetails = async (updateBody, book) => {
-  if(!validateRequestBody(Book, updateBody)){
-    throw new Error(`The keys for model: ${Book.name} are wrong`);
-  }
-  
-  const updatedBook = await book.update(updateBody);
-
-  return updatedBook.dataValues;
-};
-
-// A function that allows changing the author(s) of a book
-const changeAuthor = async (bookToUpdate, authorsToRemove = [], authorsToAdd = []) => {
-  if (isNullOrEmpty(bookToUpdate.dataValues)) {
-    throw new Error(`Given book to update is null`);
-  };
-
-  const bookAuthorIds = bookToUpdate.Authors.map((author) => author.dataValues.id);
-
-  // Checks whether all ids in authorsToRemove is present in the array of authors for this book
-  if (authorsToRemove.length > 0 && !checkArrayContent(bookAuthorIds, authorsToRemove)) {
-    throw new Error('Invalid author ids to remove');
-  }
-
-  // Verify whether the author ids to add are authors that exist in the database
-  if (authorsToAdd.length > 0) {
-    // Look for the author in the authors table using their id
-    const [authorValid, foundAuthors] = await checkAuthorPresence(authorsToAdd);
-    
-    if (!authorValid) {
-      throw new Error('At least one of the authors to add don\'t exist in the database');
-    }
-
-    // If at least one of the given authors to add has been credited with writing this book, then you can't add these authors
-    if (!checkUniqueness(bookAuthorIds, authorsToAdd)) {
-      throw new Error('At least one of the authors is already credited with writing this book');
-    }
-  }
-
-  const removed = await removeAuthorsFromBook(bookToUpdate, authorsToRemove);
-
-  const added = await linkBookToAuthors(bookToUpdate, authorsToAdd);
-
-  return added;
 };
 
 // Delete specified book entries from the database
@@ -335,6 +268,12 @@ const findBook = async (queryConditions) => {
   });
 
   return book;
+}
+
+const deleteCover = (coverPictureName) => {
+  if(coverPictureName != null){
+    deleteFile(`${bookCoverPath}${coverPictureName}`);
+  }
 }
 
 module.exports = {
