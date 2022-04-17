@@ -1,8 +1,11 @@
 const {pool} = require('../config/db_setup');
+const path = require('path');
 const {isNullOrEmpty, createUpdateQuery, deleteFile} = require('./general');
 
 const bookValidator = require('../services/validators/bookValidator');
 const bookService = require('../services/bookService');
+
+const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
@@ -55,6 +58,7 @@ const updateBook = async (req, res) => {
     }
 
     const {book, previousBookValues} = await bookService.updateBook(bookId, bookChanges, authorChanges);
+
 
     res.status(200).json(book);
   } catch (err) {
