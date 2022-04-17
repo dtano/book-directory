@@ -1,12 +1,13 @@
 const express = require('express');
 const {coverUpload, createUploadMiddleware} = require('../middleware/upload');
+const {attachCover} = require('../middleware/fileRequestBodyAttacher');
 
 const router = express.Router();
 const {postBook, getAllBooks, updateBook, deleteBook, deleteMultipleBooks,
   getBook, uploadCoverImage} = require('../controllers/bookController');
 
 // Adds a book to the database
-router.post('/', coverUpload.single('cover'), async (req, res) => {
+router.post('/', coverUpload.single('cover'), attachCover, async (req, res) => {
   if (req.fileValidationError) {
     return res.status(400).send(req.fileValidationError);
   }
@@ -19,7 +20,7 @@ router.get('/', async (req, res) => {
   await getAllBooks(req, res);
 });
 
-router.get('/example', coverUpload.single('cover'), (req, res) => {
+router.get('/example', coverUpload.single('cover'), attachCover, (req, res) => {
   const bookChanges = JSON.parse(req.body.bookChanges);
 
   if (req.file != null) {
@@ -46,7 +47,7 @@ router.put('/test/cover/:id', createUploadMiddleware('book', true).single('cover
 });
 
 // Updates the specified entry
-router.put('/:id', coverUpload.single('cover'), async (req, res) => {
+router.put('/:id', coverUpload.single('cover'), attachCover, async (req, res) => {
   if (req.fileValidationError) {
     return res.status(400).send(req.fileValidationError);
   }

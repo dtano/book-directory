@@ -85,7 +85,7 @@ const bookService = {
             }
         });
 
-        if(!isBookDeleted){
+        if(isBookDeleted === 0){
             throw new Error(`Failed to delete book with id: ${bookId}`);
         }
 

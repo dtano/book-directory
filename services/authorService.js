@@ -1,5 +1,11 @@
 const {Author, Book} = require('../models/');
+const {deleteFile} = require('../controllers/general');
 const Op = require('../models/index').Sequelize.Op; 
+
+const path = require('path');
+
+// Where images will be stored in the project directory
+const authorImgPath = path.join(__dirname, '../public/uploads/authors/');
 
 const authorService = {
     createAuthor: async (details) => {
@@ -49,6 +55,10 @@ const authorService = {
             throw new Error(`Failed to update author with id = ${authorId}`);
         }
 
+        if(previousValues.profile_picture != updatedAuthor.dataValues.profile_picture){
+            authorService.deleteProfilePicture(previousValues.profile_picture);
+        }
+
         return {updatedAuthor, previousValues};
     },
 
@@ -66,6 +76,12 @@ const authorService = {
                 id: authorId,
             },
         });
+
+        if(numDeletedEntries === 0){
+            throw new Error(`Failed to delete author with id = ${authorId}`);
+        }
+
+        authorService.deleteProfilePicture(author.profile_picture);
 
         return {author, numDeletedEntries};
     },
@@ -86,6 +102,12 @@ const authorService = {
             return [true, authors];
         }
         return [false, null];
+    }, 
+
+    deleteProfilePicture: (profilePictureName) => {
+        if(profilePictureName != null){
+            deleteFile(`${authorImgPath}${profilePictureName}`);
+        }
     }
 }
 

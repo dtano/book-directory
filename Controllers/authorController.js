@@ -10,14 +10,15 @@ const postAuthor = async (req, res) => {
   try {
     if(isNullOrEmpty(req.body)) throw new Error('Request body is empty');
     
+    console.log(req.file);
     // Add the author image file path to the query body if there is an image attached
-    req.body.profile_picture = req.file != null ? req.file.filename : null;
+    //req.body.profile_picture = req.file != null ? req.file.filename : null;
 
     const createdAuthor = await authorService.createAuthor(req.body);
     
     res.status(200).json(createdAuthor.toJSON());
   } catch (err) {
-    if (req.file != null) deleteProfilePicture(req.file.filename);
+    if (req.file != null) authorService.deleteProfilePicture(req.file.filename);
     res.status(400).json(err.message);
   }
 };
@@ -27,7 +28,7 @@ const getAllAuthors = async (req, res) => {
   try {
     const authors = await authorService.findAllAuthors();
 
-    if(authors.length == 0) {
+    if(authors.length === 0) {
       res.status(404).send('No authors with specified conditions found');
       return;
     }
@@ -58,17 +59,18 @@ const getAuthor = async (req, res) => {
 const updateAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
+    console.log(req.file);
     if(isEmpty(req.body)) throw new Error(`Request body is empty`);
     
-    let isProfilePictureUpdated = false;
-    if (req.file != null){
-      req.body.profile_picture = req.file.filename;
-      isProfilePictureUpdated = true;
-    }
+    // let isProfilePictureUpdated = false;
+    // if (req.file != null){
+    //   //req.body.profile_picture = req.file.filename;
+    //   isProfilePictureUpdated = true;
+    // }
 
     const {updatedAuthor, previousValues} = await authorService.updateAuthor(authorId, req.body);
 
-    if(isProfilePictureUpdated) deleteProfilePicture(previousValues.profile_picture);
+    //if(isProfilePictureUpdated) deleteProfilePicture(previousValues.profile_picture);
     
     res.status(200).json(updatedAuthor.toJSON());
   } catch (err) {
@@ -81,24 +83,12 @@ const deleteAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
     const {author: deletedAuthor, numDeletedEntries} = await authorService.deleteAuthor(authorId);
-    
-    if (numDeletedEntries === 0) {
-      throw new Error(`Failed to delete entry with id = ${authorId}`);
-    }
-
-    deleteProfilePicture(deletedAuthor.profile_picture);
 
     res.status(200).json(`Successfully deleted author with id: ${authorId}`);
   } catch (err) {
     res.status(400).json(err.message);
   }
 };
-
-const deleteProfilePicture = (profilePictureName) => {
-  if(profilePictureName != null){
-    deleteFile(`${authorImgPath}${profilePictureName}`);
-  }
-}
 
 module.exports = {
   postAuthor,
