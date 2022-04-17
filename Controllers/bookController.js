@@ -1,12 +1,8 @@
 const {pool} = require('../config/db_setup');
-const path = require('path');
-const {Author, Book} = require('../models/');
-const {isNullOrEmpty, checkArrayContent, checkUniqueness, createUpdateQuery, checkAuthorPresence, deleteFile, validateRequestBody} = require('./general');
+const {isNullOrEmpty, createUpdateQuery, deleteFile} = require('./general');
 
 const bookValidator = require('../services/validators/bookValidator');
 const bookService = require('../services/bookService');
-
-const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
@@ -34,57 +30,6 @@ const postBook = async (req, res) => {
   }
 };
 
-// Use this to link multiple authors to a book
-const linkBookToAuthors = async (book, authorIds) => {
-  // Now we need to make nested array that contains book_id and author_ids
-  if (authorIds.length === 0) {
-    return {};
-  }
-
-  let authors = [];
-  for(const authorId of authorIds){
-    const author = await Author.findOne({
-      where: {
-        id: authorId
-      }
-    });
-
-    if(!isNullOrEmpty(author)){
-      authors.push(author);
-    }
-  }
-
-  await book.setAuthors(authors);
-
-  const bookWithAuthors = await Book.findOne({
-    where: {id: book.id},
-    include: Author,
-  });
-
-  return bookWithAuthors;
-};
-
-// Remove one or more authors from the given book
-const removeAuthorsFromBook = async (book, authorsToRemove) => {
-  if (authorsToRemove.length === 0) {
-    return {};
-  }
-
-  const successfulRemovals = [];
-  for(const authorId of authorsToRemove){
-    const authorToRemove = await Author.findOne({where: {id: authorId}});
-
-    if(isNullOrEmpty(authorToRemove)){
-      continue;
-    }
-
-    await book.removeAuthor(authorToRemove);
-    successfulRemovals.push(authorId);
-  }
-
-  return successfulRemovals;
-};
-
 // Update book entry with the values in the request body
 const updateBook = async (req, res) => {
   const {id: bookId} = req.params;
@@ -105,17 +50,11 @@ const updateBook = async (req, res) => {
       throw new Error('The request body is not of the correct format');
     }
 
-    let isBookCoverUpdated = false;
     if (req.file != null) {
       bookChanges.cover = req.file.filename;
-      isBookCoverUpdated = true;
     }
 
     const {book, previousBookValues} = await bookService.updateBook(bookId, bookChanges, authorChanges);
-
-    if(isBookCoverUpdated) {
-      deleteCover(previousBookValues.cover);
-    }
 
     res.status(200).json(book);
   } catch (err) {
@@ -132,41 +71,16 @@ const updateBook = async (req, res) => {
 const deleteMultipleBooks = async (req, res) => {
   try {
     const {deleteIDs: bookIdsToDelete} = req.body;
-    if (isNullOrEmpty(bookIdsToDelete)) {
-      throw new Error('No books to delete');
-    }
-
-    const booksToDelete = await Book.findAll({
-      where: {
-        id: bookIdsToDelete,
-      },
-      include: Author,
-    });
-
-    if(booksToDelete.length != bookIdsToDelete.length){
-      // Find the ids that are not legal
-      const existingBookIds = booksToDelete.map((book) => book.id);
-      const nonExistantBookIds = bookIdsToDelete.filter((id) => !existingBookIds.includes(id));
-
+    const deleteConfirmation = await bookService.deleteMultipleBooks(bookIdsToDelete);
+    
+    if(!deleteConfirmation.status){
       res.status(404).json({
-        failedIds: nonExistantBookIds,
+        nonExistantBookIds: deleteConfirmation.body,
       });
-
       return;
     }
 
-    for(const book of booksToDelete)
-    {
-      if(book.dataValues.cover != null){
-        deleteFile(`${bookCoverPath}${book.cover}`);
-      }
-      
-      const authorsToRemove = book.dataValues.Authors.map(authorObj => authorObj.id);
-      await removeAuthorsFromBook(book, authorsToRemove);
-      await book.destroy();
-    }
-
-    res.status(200).json(booksToDelete);
+    res.status(200).json(deleteConfirmation.body);
   } catch (err) {
     res.status(400).json(err.message);
   }
@@ -190,28 +104,7 @@ const getBook = async (req, res) => {
 const deleteBook = async (req, res) => {
   const {id: bookId} = req.params;
   try {
-    const book = await findBook({id: bookId});
-
-    if(book == null) throw new Error(`Book with id = ${bookId} does not exist`);
-    
-    const authorIdsToRemove = book.dataValues.Authors.map(authorObj => authorObj.id);
-    await removeAuthorsFromBook(book, authorIdsToRemove);
-
-    const isBookDeleted = await Author.destroy({
-      where: {
-        id: bookId,
-      }
-    });
-
-    if(!isBookDeleted){
-      throw new Error(`Failed to delete book with id: ${bookId}`);
-    }
-
-    // Delete cover image here
-    const coverPicturePath = book.cover;
-    if (coverPicturePath != null) {
-      deleteFile(`${bookCoverPath}${coverPicturePath}`);
-    }
+    const book = await bookService.deleteBook(bookId);
 
     res.status(200).json(book);
   } catch (err) {
@@ -260,21 +153,6 @@ const uploadCoverImage = async (req, res) => {
     res.status(400).json(err.message);
   }
 };
-
-const findBook = async (queryConditions) => {
-  const book = await Book.findOne({
-    where: queryConditions,
-    include: Author,
-  });
-
-  return book;
-}
-
-const deleteCover = (coverPictureName) => {
-  if(coverPictureName != null){
-    deleteFile(`${bookCoverPath}${coverPictureName}`);
-  }
-}
 
 module.exports = {
   postBook,

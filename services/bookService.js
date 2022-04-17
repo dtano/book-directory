@@ -1,7 +1,10 @@
 const {Author, Book} = require('../models/');
+const path = require('path');
 const authorService = require('./authorService');
 const bookValidator = require('./validators/bookValidator');
-const {isEmpty, isNullOrEmpty, checkArrayContent, checkUniqueness, validateRequestBody} = require('../controllers/general');
+const {isNullOrEmpty, deleteFile, checkArrayContent, checkUniqueness, validateRequestBody} = require('../controllers/general');
+
+const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
 
 const AUTHOR_LINK_ERROR = 'Failed to establish a link between book and author(s)';
 
@@ -60,7 +63,64 @@ const bookService = {
             book = await changeAuthor(book, authorChanges.authorsToRemove, authorChanges.authorsToAdd);
         }
 
+        if(previousBookValues.cover != book.cover){
+            // Means that the cover was updated, therefore delete old one
+            bookService.deleteCover(previousBookValues.cover);
+        }
+
         return {book, previousBookValues};
+    }, 
+
+    deleteBook: async (bookId) => {
+        const book = await bookService.findBook({id: bookId});
+
+        if(!book) throw new Error(`Book with id = ${bookId} does not exist`);
+
+        const authorIdsToRemove = book.dataValues.Authors.map(authorObj => authorObj.id);
+        await removeAuthorsFromBook(book, authorIdsToRemove);
+
+        const isBookDeleted = await Book.destroy({
+            where: {
+              id: bookId,
+            }
+        });
+
+        if(!isBookDeleted){
+            throw new Error(`Failed to delete book with id: ${bookId}`);
+        }
+
+        bookService.deleteCover(book.cover);
+
+        return deletedBook;
+    },
+
+    deleteMultipleBooks: async (bookIdsToDelete) => {
+        if(isNullOrEmpty(bookIdsToDelete)) throw new Error('No books to delete');
+        const booksToDelete = await bookService.findAllBooks({ id: bookIdsToDelete });
+
+        if(booksToDelete.length !== bookIdsToDelete.length){
+            // Find the ids that are not legal
+            const existingBookIds = booksToDelete.map((book) => book.id);
+            const nonExistantBookIds = bookIdsToDelete.filter((id) => !existingBookIds.includes(id));
+
+            return {status: false, body: nonExistantBookIds};
+        }
+
+        for(const book of booksToDelete){
+            const authorsToRemove = book.dataValues.Authors.map(authorObj => authorObj.id);
+            await removeAuthorsFromBook(book, authorsToRemove);
+            await book.destroy();
+
+            bookService.deleteCover(book.cover);
+        }
+
+        return {status: true, body: booksToDelete}
+    }, 
+
+    deleteCover: (coverPictureName) => {
+        if(coverPictureName != null){
+            deleteFile(`${bookCoverPath}${coverPictureName}`);
+        }
     }
 };
 

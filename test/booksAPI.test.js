@@ -261,7 +261,7 @@ describe('Delete book route', () => {
     
     expect(response.statusCode).toBe(404);
     expect(response.body).toBeDefined();
-    expect(response.body.failedIds.length).toBe(1);
+    expect(response.body.nonExistantBookIds.length).toBe(1);
   });
 
   it('Does not proceed with deleting when body is empty', async () => {
@@ -284,28 +284,6 @@ const areBodyValuesEqual = (expectedBody, actualBody) => {
   }
 
   return true;
-}
-
-const removeAuthorsFromBook = async (book) => {
-  const bookObj = await Book.findOne({
-    where: {id: book.id},
-    include: Author,
-  })
-
-  if(bookObj != null){
-    for(const author of bookObj.dataValues.Authors){
-      await bookObj.removeAuthor(author);
-    }
-  }
-};
-
-const deleteBook = async (book) => {
-  await removeAuthorsFromBook(book);
-  await Book.destroy({
-      where: {
-          id: book.id
-      }, 
-  });
 }
 
 const addMapping = (bookId, authorIds) => {
