@@ -1,11 +1,8 @@
 const {pool} = require('../config/db_setup');
-const path = require('path');
 const {isNullOrEmpty, createUpdateQuery, deleteFile} = require('./general');
 
 const bookValidator = require('../services/validators/bookValidator');
 const bookService = require('../services/bookService');
-
-const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
 
 // Creates a new book entry in the database
 const postBook = async (req, res) => {
@@ -27,7 +24,7 @@ const postBook = async (req, res) => {
   } catch (err) {
     // If there was an error and the request had a file, then delete it
     if (req.file != null) {
-      deleteFile(`${bookCoverPath}${req.file.filename}`);
+      bookService.deleteCover(req.file.filename);
     }
     res.status(400).json(err.message);
   }
@@ -64,7 +61,7 @@ const updateBook = async (req, res) => {
   } catch (err) {
     // If update was unsuccessful, then we'll need to delete any uploaded file
     if (req.file != null) {
-      deleteFile(`${bookCoverPath}${req.file.filename}`);
+      bookService.deleteCover(req.file.filename);
     }
     console.log(err.message);
     res.status(400).json(err.message);
@@ -153,7 +150,7 @@ const uploadCoverImage = async (req, res) => {
 
     res.status(200).json(updatedEntry.rows[0]);
   } catch (err) {
-    deleteFile(`${bookCoverPath}${req.file.filename}`);
+    bookService.deleteCover(req.file.filename);
     res.status(400).json(err.message);
   }
 };
