@@ -1,9 +1,5 @@
 const authorService = require('../services/authorService');
-const {isEmpty, isNullOrEmpty, deleteFile} = require('./general');
-const path = require('path');
-
-// Where images will be stored in the project directory
-const authorImgPath = path.join(__dirname, '../public/uploads/authors/');
+const {isEmpty, isNullOrEmpty} = require('./general');
 
 // Create a new author entry
 const postAuthor = async (req, res) => {
@@ -61,17 +57,9 @@ const updateAuthor = async (req, res) => {
   try {
     console.log(req.file);
     if(isEmpty(req.body)) throw new Error(`Request body is empty`);
-    
-    // let isProfilePictureUpdated = false;
-    // if (req.file != null){
-    //   //req.body.profile_picture = req.file.filename;
-    //   isProfilePictureUpdated = true;
-    // }
 
     const {updatedAuthor, previousValues} = await authorService.updateAuthor(authorId, req.body);
 
-    //if(isProfilePictureUpdated) deleteProfilePicture(previousValues.profile_picture);
-    
     res.status(200).json(updatedAuthor.toJSON());
   } catch (err) {
     res.status(400).json(err.message);

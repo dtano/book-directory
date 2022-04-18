@@ -10,12 +10,11 @@ const postBook = async (req, res) => {
     await bookValidator.validate(req.body);
     
     // Add the cover image file path to the query body if there is an image attached
-    const coverImgName = req.file != null ? req.file.filename : null;
     const queryBody = {
       title: req.body.title,
       pages: req.body.pages,
       date_published: req.body.date_published,
-      cover: coverImgName,
+      cover: req.body.cover,
     };
 
     const book = await bookService.createBook(queryBody, req.body.author_ids);
