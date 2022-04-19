@@ -1,13 +1,17 @@
 const express = require('express');
-const {coverUpload, createUploadMiddleware} = require('../middleware/upload');
-const {attachCover} = require('../middleware/fileRequestBodyAttacher');
-
 const router = express.Router();
+const env = process.env.NODE_ENV || 'development';
+
 const {postBook, getAllBooks, updateBook, deleteBook, deleteMultipleBooks,
-  getBook, uploadCoverImage} = require('../controllers/bookController');
+  getBook} = require('../controllers/bookController');
+const {imageUpload} = require('../middleware/upload');
+const {attachCover} = require('../middleware/fileRequestBodyAttacher');
+const {coverUploadPath} = require('../config/config')[env].imageUploadPaths;
+
+const uploadCoverPicture = imageUpload(coverUploadPath).single('cover');
 
 // Adds a book to the database
-router.post('/', coverUpload.single('cover'), attachCover, async (req, res) => {
+router.post('/', uploadCoverPicture, attachCover, async (req, res) => {
   if (req.fileValidationError) {
     return res.status(400).send(req.fileValidationError);
   }
@@ -20,26 +24,15 @@ router.get('/', async (req, res) => {
   await getAllBooks(req, res);
 });
 
-router.get('/example', coverUpload.single('cover'), attachCover, (req, res) => {
+router.get('/example', uploadCoverPicture, attachCover, (req, res) => {
   const bookChanges = JSON.parse(req.body.bookChanges);
 
   if (req.file != null) {
     bookChanges.cover = req.file.filename;
   }
-
-  console.log(bookChanges);
-
-  res.json('Kiss me more');
 });
 
-router.put('/cover/:id', coverUpload.single('cover'), async (req, res) => {
-  if (req.fileValidationError) {
-    return res.status(400).send(req.fileValidationError);
-  }
-  await uploadCoverImage(req, res);
-});
-
-router.put('/test/cover/:id', createUploadMiddleware('book', true).single('cover'), async (req, res) => {
+router.put('/cover/:id', uploadCoverPicture, async (req, res) => {
   if (req.fileValidationError) {
     return res.status(400).send(req.fileValidationError);
   }
@@ -47,7 +40,7 @@ router.put('/test/cover/:id', createUploadMiddleware('book', true).single('cover
 });
 
 // Updates the specified entry
-router.put('/:id', coverUpload.single('cover'), attachCover, async (req, res) => {
+router.put('/:id', uploadCoverPicture, attachCover, async (req, res) => {
   if (req.fileValidationError) {
     return res.status(400).send(req.fileValidationError);
   }

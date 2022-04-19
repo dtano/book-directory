@@ -1,14 +1,18 @@
 const express = require('express');
 const router = express.Router();
+const env = process.env.NODE_ENV || 'development';
+
 const {postAuthor, getAllAuthors, getAuthor, deleteAuthor, updateAuthor} = require('../controllers/authorController');
-
-const {authorUpload} = require('../middleware/upload');
+const {imageUpload} = require('../middleware/upload');
 const {attachProfilePicture} = require('../middleware/fileRequestBodyAttacher');
+const {authorProfilePicturePath} = require('../config/config.js')[env].imageUploadPaths;
 
+const uploadProfilePicture = imageUpload(authorProfilePicturePath).single('profile-picture');
 // Post author
-router.post('/', authorUpload.single('profile-picture'), attachProfilePicture, async (req, res) => {
+router.post('/', uploadProfilePicture, attachProfilePicture, async (req, res) => {
   await postAuthor(req, res);
 });
+
 // Get all authors
 router.get('/', async (req, res) => {
   await getAllAuthors(req, res);
@@ -25,7 +29,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Update author
-router.put('/:id', authorUpload.single('profile-picture'), attachProfilePicture, async (req, res) => {
+router.put('/:id', uploadProfilePicture, attachProfilePicture, async (req, res) => {
   await updateAuthor(req, res);
 });
 

@@ -9,6 +9,10 @@ module.exports = {
     'database': PGDATABASE,
     'host': PGHOST,
     'dialect': 'postgres',
+    'imageUploadPaths': {
+      'coverUploadPath': './public/uploads/bookCovers',
+      'authorProfilePicturePath': './public/uploads/authors',
+    }
   },
   'test': {
     'username': PGUSER,
@@ -16,6 +20,10 @@ module.exports = {
     'database': 'book_db_test',
     'host': PGHOST,
     'dialect': 'postgres',
+    'imageUploadPaths': {
+      'coverUploadPath': './test/testUploads/bookCovers',
+      'authorProfilePicturePath': './test/testUploads/authors',
+    }
   },
   'production': {
     'username': PGUSER,
@@ -23,5 +31,9 @@ module.exports = {
     'database': PGDATABASE,
     'host': PGHOST,
     'dialect': 'postgres',
+    'imageUploadPaths': {
+      'coverUploadPath': './public/uploads/bookCovers',
+      'authorProfilePicturePath': './public/uploads/authors',
+    }
   },
 };
