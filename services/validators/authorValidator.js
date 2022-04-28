@@ -1,9 +1,9 @@
 const authorValidator = {
     validate: (authorInformation) => {
-        authorValidator.areBirthAndDeathDatesValid(authorInformation.birth_date, authorInformation.death_date);
+        authorValidator.isDeathDateGreaterThanBirthDate(authorInformation.birth_date, authorInformation.death_date);
     },
 
-    areBirthAndDeathDatesValid: (birthDate, deathDate) => {
+    isDeathDateGreaterThanBirthDate: (birthDate, deathDate) => {
         if(birthDate === null && deathDate === null) return;
 
         let birthDateObj = new Date(birthDate);

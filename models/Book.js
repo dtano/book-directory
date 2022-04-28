@@ -40,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     date_published: DataTypes.DATEONLY,
     cover: DataTypes.STRING,
+    description: DataTypes.TEXT,
   }, {
     sequelize,
     timestamps: false,

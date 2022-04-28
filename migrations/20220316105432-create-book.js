@@ -22,6 +22,9 @@ module.exports = {
       cover: {
         type: DataTypes.STRING,
       },
+      description: {
+        type: DataTypes.TEXT,
+      },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
     });

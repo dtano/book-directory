@@ -50,7 +50,8 @@ module.exports = (sequelize, DataTypes) => {
     birth_date: DataTypes.DATEONLY,
     death_date: {
       type: DataTypes.DATEONLY, 
-      validate: {
+      validate:
+      {
         isDeathDateGreaterThanBirthDate(value) {
           if(value === null && this.birth_date === null) return;
           if (new Date(value) <= new Date(this.birth_date)) {
