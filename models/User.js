@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
+    userName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,7 +36,6 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     sequelize,
-    timestamps: false,
     tableName: 'users',
     modelName: 'User',
   });

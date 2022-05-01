@@ -7,10 +7,12 @@ const {isNullOrEmpty, deleteFile, checkArrayContent, checkUniqueness, validateRe
 const bookCoverPath = path.join(__dirname, '../public/uploads/bookCovers/');
 
 const AUTHOR_LINK_ERROR = 'Failed to establish a link between book and author(s)';
+const DUPLICATE_BOOK_ERROR = 'Duplicate book already exists';
 
 const bookService = {
     createBook: async (details, authorIds) => {
-        await bookValidator.isDuplicateBook(details, authorIds);
+        const isBookDuplicate = await bookValidator.isDuplicateBook(details, authorIds);
+        if(isBookDuplicate) throw new Error(DUPLICATE_BOOK_ERROR);
         
         const book = await Book.create(details);
 
@@ -33,6 +35,7 @@ const bookService = {
     },
 
     findAllBooks: async (conditions = {}) => {
+        console.log(conditions);
         const books = await Book.findAll({
             where: conditions,
             include: Author,

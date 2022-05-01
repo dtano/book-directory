@@ -1,8 +1,10 @@
 const {User} = require('../models/User');
 
 const userService = {
-    createUser: async () => {
+    createUser: async (details) => {
+        const user = await User.create(details);
 
+        return user;
     },
 
     getUser: async () => {
