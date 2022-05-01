@@ -1,4 +1,5 @@
-const {User} = require('../models/User');
+const {User} = require('../models/');
+const {validateRequestBody} = require('../controllers/general');
 
 const userService = {
     createUser: async (details) => {
@@ -7,8 +8,12 @@ const userService = {
         return user;
     },
 
-    getUser: async () => {
+    getUser: async (conditions) => {
+        const user = await User.findOne({
+            where: conditions,
+        });
 
+        return user;
     },
 
     updateUser: async () => {
@@ -17,6 +22,10 @@ const userService = {
 
     deleteUser: async () => {
 
+    },
+
+    validateRequestBody: (body) => {
+        return validateRequestBody(User, body);
     }
 }
 

@@ -18,15 +18,19 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-    userName: {
+    username: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    firstName: {
+    password: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    lastName: {
+    given_names: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    surname: {
       type: DataTypes.STRING,
       allowNull: false,
     },

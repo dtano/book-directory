@@ -8,15 +8,25 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
-      userName: {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+      },
+      username: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+      },
+      password: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      firstName: {
+      given_names: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      lastName: {
+      surname: {
         type: DataTypes.STRING,
         allowNull: false,
       },

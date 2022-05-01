@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -12,6 +14,20 @@ const authenticateToken = (req, res, next) => {
     });
 }
 
+const hashPassword = async (password) => {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    return hashedPassword;
+}
+
+const compareHash = async (plainPassword, hashedPassword) => {
+    const arePasswordsEqual = await bcrypt.compare(plainPassword, hashedPassword);
+    return arePasswordsEqual;
+}
+
 module.exports = {
     authenticateToken,
+    hashPassword,
+    compareHash,
 }
