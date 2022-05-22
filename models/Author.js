@@ -1,4 +1,5 @@
 'use strict';
+const { string } = require('pg-format');
 const {Model} = require('sequelize');
 const authorValidator = require('../services/validators/authorValidator');
 
@@ -36,6 +37,16 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: {
         notEmpty: true,
+        // Need to test this
+        isAtLeastOneName(value){
+          if(value == null){
+            if(this.given_names !== ''){
+              return;
+            }else{
+              throw new Error('One of surname or given names must not be empty');
+            }
+          };
+        }
       }
     },
     country_origin: {
@@ -50,21 +61,17 @@ module.exports = (sequelize, DataTypes) => {
     birth_date: DataTypes.DATEONLY,
     death_date: {
       type: DataTypes.DATEONLY, 
-      validate:
-      {
-        isDeathDateGreaterThanBirthDate(value) {
-          if(value === null && this.birth_date === null) return;
-          if (new Date(value) <= new Date(this.birth_date)) {
-            throw new Error('Date of death must be greater than date of birth');
-          }
-        }
-      }
     },
   }, {
     sequelize,
     timestamps: false,
     tableName: 'authors',
     modelName: 'Author',
+    hooks: {
+      beforeCreate: (authorAttributes, options) => {
+        authorValidator.validate(authorAttributes);
+      }
+    }
   });
   return Author;
 };

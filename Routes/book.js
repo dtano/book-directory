@@ -10,6 +10,11 @@ const {coverUploadPath} = require('../config/config')[env].imageUploadPaths;
 
 const uploadCoverPicture = imageUpload(coverUploadPath).single('cover');
 
+// Gets all listed books
+router.get('/', async (req, res) => {
+  await getAllBooks(req, res);
+});
+
 // Adds a book to the database
 router.post('/', uploadCoverPicture, attachCover, async (req, res) => {
   if (req.fileValidationError) {
@@ -17,11 +22,6 @@ router.post('/', uploadCoverPicture, attachCover, async (req, res) => {
   }
   // Create a new book entry
   await postBook(req, res);
-});
-
-// Gets all listed books
-router.get('/', async (req, res) => {
-  await getAllBooks(req, res);
 });
 
 router.get('/example', uploadCoverPicture, attachCover, (req, res) => {

@@ -1,4 +1,4 @@
-const BookDetails = {
+const BookDetailsStyle = {
     listStyle: "none",
     padding: 0,
     margin: 0,
@@ -22,19 +22,30 @@ const BookCardStyle = {
 }
 
 
-function BookCard(props) {
+const BookCard = (props) => {
     const book = props.book;
     
     return(
         <div className='book-card' key={book.id} style={BookCardStyle}>
             {/* <img src={sample} alt="Test" style={BookImage}/> */}
             <h3 style={{marginBottom: 0}}>{book.title}</h3>
-            <ul style={BookDetails}> 
-                <li>{book.genre}</li>
-                <li>{book.author}</li>
+            <ul style={BookDetailsStyle}> 
+                {/* <li>{book.genre}</li> */}
+                <li>{getBookAuthorNames(book.Authors)}</li>
             </ul>
         </div>
     );
+}
+
+// Need a more thorough way of doing this
+const getBookAuthorNames = (authors) => {
+    var allAuthorNames = [];
+
+    for(const author of authors){
+        allAuthorNames.push(`${author.given_names} ${author.surname}`);
+    }
+
+    return allAuthorNames.join(', ');
 }
 
 export default BookCard;
