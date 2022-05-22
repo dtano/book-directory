@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import BookGrid from "./BookGrid";
-import axios from 'axios';
+import useApi from '../hooks/useApi';
+import bookApi from '../API/bookApi';
 
-// const bookData = require('../data/bookData');
 const FeaturedBooksStyle = {
     margin: 'auto',
     width: '75%',
@@ -12,26 +12,16 @@ const FeaturedBooksStyle = {
 }
 
 const FeaturedBooks = () => {
-    let [featuredBooks, setFeaturedBooks] = useState([]);
+    const getFeaturedBooks = useApi(bookApi.getAllBooks);
   
     useEffect(() => {
-        fetchFeaturedBooks();
+        getFeaturedBooks.request();
     }, []);
-
-    const fetchFeaturedBooks = () => {
-        axios.get('http://localhost:5000/api/book/')
-        .then((res) => {
-            console.log(res.data);
-            setFeaturedBooks(res.data);
-        }).catch((err) => {
-            console.log(err);
-        });
-    }
 
     return(
         <div className="featured-books" style={FeaturedBooksStyle}>
             <h2>Featured Books</h2>
-            <BookGrid books={featuredBooks}/>
+            <BookGrid books={getFeaturedBooks.data}/>
         </div>
     )
 }

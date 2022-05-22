@@ -15,7 +15,7 @@ function BookGrid(props) {
     
     return (
         <div className="book-list" style={BookGridStyle}>
-            {bookList.map((bookInformation) => <BookCard book={bookInformation} key={bookInformation.id}/>)}
+            {bookList?.map((bookInformation) => <BookCard book={bookInformation} key={bookInformation.id}/>)}
         </div>
     )
 }

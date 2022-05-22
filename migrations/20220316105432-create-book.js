@@ -16,6 +16,9 @@ module.exports = {
       pages: {
         type: DataTypes.INTEGER,
       },
+      genre: {
+        type: DataTypes.STRING,
+      },
       date_published: {
         type: DataTypes.DATEONLY,
       },

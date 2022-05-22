@@ -38,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         min: 0,
       }
     },
+    genre: DataTypes.STRING,
     date_published: DataTypes.DATEONLY,
     cover: DataTypes.STRING,
     description: DataTypes.TEXT,
