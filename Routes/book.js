@@ -24,14 +24,6 @@ router.post('/', uploadCoverPicture, attachCover, async (req, res) => {
   await postBook(req, res);
 });
 
-router.get('/example', uploadCoverPicture, attachCover, (req, res) => {
-  const bookChanges = JSON.parse(req.body.bookChanges);
-
-  if (req.file != null) {
-    bookChanges.cover = req.file.filename;
-  }
-});
-
 router.put('/cover/:id', uploadCoverPicture, async (req, res) => {
   if (req.fileValidationError) {
     return res.status(400).send(req.fileValidationError);

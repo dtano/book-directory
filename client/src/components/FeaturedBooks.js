@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import BookGrid from "./BookGrid";
-import useApi from '../hooks/useApi';
+// import useApi from '../hooks/useApi';
+import useFetch from '../hooks/useFetch';
 import bookApi from '../API/bookApi';
 
 const FeaturedBooksStyle = {
@@ -12,16 +13,14 @@ const FeaturedBooksStyle = {
 }
 
 const FeaturedBooks = () => {
-    const getFeaturedBooks = useApi(bookApi.getAllBooks);
-  
-    useEffect(() => {
-        getFeaturedBooks.request();
-    }, []);
+    const { data, error } = useFetch(bookApi.getAllBooks);
+
+    if(error) console.log(error);
 
     return(
         <div className="featured-books" style={FeaturedBooksStyle}>
             <h2>Featured Books</h2>
-            <BookGrid books={getFeaturedBooks.data}/>
+            <BookGrid books={data}/>
         </div>
     )
 }
