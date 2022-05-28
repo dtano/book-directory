@@ -1,9 +1,13 @@
 import './App.css';
 import FeaturedBooks from './components/FeaturedBooks';
+import NavBar from './components/NavBar';
 
 function App() {
   return (
-    <FeaturedBooks />
+    <div>
+      <NavBar/>
+      <FeaturedBooks/>
+    </div>
   );
 }
 
