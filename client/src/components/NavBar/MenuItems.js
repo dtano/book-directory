@@ -1,10 +1,5 @@
 const MenuItems = [
     {
-        title: 'Home',
-        url: '#',
-        cName: 'nav-links'
-    },
-    {
         title: 'Notifications',
         url: '#',
         cName: 'nav-links'

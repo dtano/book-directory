@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import MenuItems from './MenuItems';
-import { Button } from '../Button';
+//import { Button } from '../Button';
 import './NavBar.css';
 
 // const NavBarItemsStyle = {
@@ -44,21 +44,39 @@ const NavBar = () => {
     
     return (
         <nav className='NavBarItems'>
-            <h1 className='navbar-logo'>MyBrary<i className="fab fa-react"></i></h1>
+            {/* <div className='navbar-logo'>
+                <h1>MyBrary<i className="fab fa-react"></i></h1>
+            </div> */}
+            <div className='navbar-left'>
+                <h1 className='navbar-logo'>MyBrary<i className="fab fa-react"></i></h1>
+                <ul>
+                    <li>Home</li>
+                    <li>My Books</li>
+                </ul>
+            </div>
+            {/* <h1 className='navbar-logo'>MyBrary<i className="fab fa-react"></i></h1>
+            <div>
+                <ul>
+                    <li>Home</li>
+                    <li>My Books</li>
+                </ul>
+            </div> */}
             <div className='search-bar'>
-                <input type="text" placeholder="Search.."/>
+                <input type="text" placeholder="Search books.."/>
             </div>
-            <div className='menu-icon' onClick={handleClick}>
+            {/* <div className='menu-icon' onClick={handleClick}>
                 <i className={isClicked ? 'fas fa-times' : 'fas fa-bars'}></i>
+            </div> */}
+            <div className={isClicked ? 'nav-menu active' : 'nav-menu'}>
+                <ul>
+                    {MenuItems.map((item, index) => {
+                        return (
+                            <li key={index}><a className={item.cName} href={item.url}>{item.title}</a></li>
+                        )
+                    })}
+                </ul>
             </div>
-            <ul className={isClicked ? 'nav-menu active' : 'nav-menu'}>
-                {MenuItems.map((item, index) => {
-                    return (
-                        <li key={index}><a className={item.cName} href={item.url}>{item.title}</a></li>
-                    )
-                })}
-            </ul>
-            <Button>Sign Up</Button>
+            {/* <Button>Sign Up</Button> */}
         </nav>
     );
 }
