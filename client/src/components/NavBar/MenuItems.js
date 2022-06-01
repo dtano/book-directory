@@ -2,18 +2,33 @@ const MenuItems = [
     {
         title: 'Notifications',
         url: '#',
-        cName: 'nav-links'
+        cName: 'nav-links',
+        icon: 'far fa-bell',
     },
     {
         title: 'Profile',
         url: '#',
-        cName: 'nav-links'
+        cName: 'nav-links',
+        icon: 'far fa-user',
     },
-    // {
-    //     title: 'SearchBar',
-    //     url: '#',
-    //     cName: 'nav-links'
-    // },
 ];
 
-export default MenuItems;
+const LeftMenuItems = [
+    {
+        title: 'Home',
+        url: '#',
+        cName: 'nav-links',
+        icon: '',
+    },
+    {
+        title: 'My Books',
+        url: '#',
+        cName: 'nav-links',
+        icon: '',
+    }
+]
+
+module.exports = {
+    MenuItems,
+    LeftMenuItems,
+}

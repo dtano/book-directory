@@ -2,7 +2,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: blue;
+    background: #3aafa9;
     margin: 0;
     padding: 0px 11em;
 }
@@ -13,7 +13,7 @@
     align-items: center;
 }
 
-.navbar-left ul {
+.NavBarItems ul {
     list-style: none;
     cursor: pointer;
 }
@@ -22,12 +22,12 @@
     display: inline-block;
     padding: 0px 15px;
     font-size: 16px;
-    color: white;
-    transition: all 0.3s ease 0s;
 }
 
 .navbar-left li:hover{
-    color: red;
+    background-color: white;
+    border-radius: 10px;
+    transition: all 0.2s ease-out;
 }
 
 .navbar-logo{
@@ -37,16 +37,20 @@
     color: white;
 }
 
+.navbar-logo i{
+    margin-left: 5px;
+}
+
+.search-bar{
+    margin-left: 0.5em;
+}
+
 .search-bar input{
-    width: 20vw;
+    width: 30vw;
     border-radius: 5px;
     text-align: left;
     font-size: 16px;
     padding: 0.3em;
-}
-
-.nav-menu{
-    list-style: none;
 }
 
 .nav-menu li{
@@ -55,13 +59,24 @@
     margin-right: 1rem;
 }
 
-.nav-menu li a{
+/* .nav-menu li a:hover{
+    color: yellow;
+    transition: all 0.2s ease-out;
+} */
+
+.nav-menu li:hover{
+    background-color: #6d76f7;
+    border-radius: 20px;
+}
+
+.nav-links{
     transition: all 0.3s ease 0s;
     text-decoration: none;
     color: white;
     font-size: 16px;
 }
 
-.nav-menu li a:hover{
-    color: red;
+.nav-links:hover{
+    color: yellow;
+    transition: all 0.2s ease-out;
 }
