@@ -7,6 +7,10 @@
     padding: 0px 11em;
 }
 
+.NavBarItems i{
+    color: white;
+}
+
 .navbar-left {
     display: flex;
     justify-content: space-between;
@@ -80,3 +84,47 @@
     color: yellow;
     transition: all 0.2s ease-out;
 } */
+
+.minimized-menu{
+    display: none;
+}
+
+.search-icon{
+    display: none;
+}
+
+@media (max-width: 650px){
+    .NavBarItems {
+        padding: 0 3em;
+    }
+
+    .navbar-logo {
+        font-size: 22px;
+    }
+
+    .minimized-menu {
+        display: inline;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .search-bar {
+        display: none;
+    }
+
+    .search-icon {
+        display: inline;
+    }
+
+    .navbar-left li {
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-menu li{
+        padding: 0;
+        margin: 0;
+    }
+}
