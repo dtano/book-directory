@@ -2,7 +2,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #3aafa9;
+    background: #264143;
     margin: 0;
     padding: 0px 11em;
 }
@@ -25,7 +25,7 @@
 }
 
 .navbar-left li:hover{
-    background-color: white;
+    background-color: rgb(204, 206, 205);
     border-radius: 10px;
     transition: all 0.2s ease-out;
 }
@@ -65,18 +65,18 @@
 } */
 
 .nav-menu li:hover{
-    background-color: #6d76f7;
+    background-color: rgb(204, 206, 205);
     border-radius: 20px;
+    transition: all 0.3s ease 0s;
 }
 
 .nav-links{
-    transition: all 0.3s ease 0s;
     text-decoration: none;
     color: white;
     font-size: 16px;
 }
 
-.nav-links:hover{
+/* .nav-links:hover{
     color: yellow;
     transition: all 0.2s ease-out;
-}
+} */
