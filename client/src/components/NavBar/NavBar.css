@@ -87,13 +87,33 @@
 
 .minimized-menu{
     display: none;
+    cursor: pointer;
+    font-size: 20px;
 }
 
 .search-icon{
     display: none;
+    cursor: pointer;
+    font-size: 20px;
 }
 
-@media (max-width: 650px){
+@media (max-width: 1200px) {
+    .NavBarItems{
+        padding: 0 6em;
+    }
+
+    .navbar-logo{
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 1000px) {
+    .NavBarItems{
+        padding: 0 2em;
+    }
+}
+
+@media (max-width: 600px){
     .NavBarItems {
         padding: 0 3em;
     }

@@ -11,9 +11,6 @@ const NavBar = () => {
     
     return (
         <nav className='NavBarItems'>
-            <div className='search-icon'>
-                <i className="fas fa-search"></i>
-            </div>
             <div className='navbar-left'>
                 <h1 className='navbar-logo'>MyBrary<i className="fas fa-book-open"></i></h1>
                 <ul>
@@ -38,6 +35,9 @@ const NavBar = () => {
                         )
                     })}
                 </ul>
+            </div>
+            <div className='search-icon'>
+                <i className="fas fa-search"></i>
             </div>
             <div className='minimized-menu'>
                 <i className='fas fa-bars'></i>
