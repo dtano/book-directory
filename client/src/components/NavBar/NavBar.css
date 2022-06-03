@@ -45,6 +45,10 @@
     margin-left: 5px;
 }
 
+.navbar-responsive{
+    display: none;
+}
+
 .search-bar{
     margin-left: 0.5em;
 }
@@ -113,9 +117,13 @@
     }
 }
 
-@media (max-width: 600px){
+@media (max-width: 750px){
     .NavBarItems {
         padding: 0 3em;
+    }
+
+    .navbar-responsive{
+        display: inline;
     }
 
     .navbar-logo {
@@ -136,6 +144,10 @@
 
     .search-icon {
         display: inline;
+    }
+
+    .navbar-left .navbar-logo{
+        display: none;
     }
 
     .navbar-left li {

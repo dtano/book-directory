@@ -11,6 +11,9 @@ const NavBar = () => {
     
     return (
         <nav className='NavBarItems'>
+            <div className='search-icon'>
+                <i className="fas fa-search"></i>
+            </div>
             <div className='navbar-left'>
                 <h1 className='navbar-logo'>MyBrary<i className="fas fa-book-open"></i></h1>
                 <ul>
@@ -24,6 +27,10 @@ const NavBar = () => {
                     <input type="text" placeholder="Search books"/>
                 </div>
             </div>
+            <div className='navbar-responsive'>
+                <h1 className='navbar-logo'>MyBrary<i className="fas fa-book-open"></i></h1>
+            </div>
+            {/* <h1 className='navbar-logo'>MyBrary<i className="fas fa-book-open"></i></h1> */}
             {/* <div className='menu-icon' onClick={handleClick}>
                 <i className={isClicked ? 'fas fa-times' : 'fas fa-bars'}></i>
             </div> */}
@@ -35,9 +42,6 @@ const NavBar = () => {
                         )
                     })}
                 </ul>
-            </div>
-            <div className='search-icon'>
-                <i className="fas fa-search"></i>
             </div>
             <div className='minimized-menu'>
                 <i className='fas fa-bars'></i>
