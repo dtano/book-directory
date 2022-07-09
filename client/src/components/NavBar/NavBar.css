@@ -67,11 +67,6 @@
     margin-right: 1rem;
 }
 
-/* .nav-menu li a:hover{
-    color: yellow;
-    transition: all 0.2s ease-out;
-} */
-
 .nav-menu li:hover{
     background-color: rgb(204, 206, 205);
     border-radius: 20px;
@@ -84,12 +79,7 @@
     font-size: 16px;
 }
 
-/* .nav-links:hover{
-    color: yellow;
-    transition: all 0.2s ease-out;
-} */
-
-.minimized-menu{
+.hamburger{
     display: none;
     cursor: pointer;
     font-size: 20px;
@@ -130,8 +120,24 @@
         font-size: 22px;
     }
 
-    .minimized-menu {
-        display: inline;
+    .hamburger {
+        display: block;
+        position: relative;
+        user-select: none;
+        appearance: none;
+        border: none;
+        background: none;
+        outline: none;
+    }
+
+    .hamburger span{
+        display: block;
+        width: 30px;
+        height: 4px;
+        margin-bottom: 5px;
+        position: relative;
+        border-radius: 6px;
+        background-color: white;
     }
 
     .nav-links {
@@ -144,10 +150,6 @@
 
     .search-icon {
         display: inline;
-    }
-
-    .navbar-left .navbar-logo{
-        display: none;
     }
 
     .navbar-left li {

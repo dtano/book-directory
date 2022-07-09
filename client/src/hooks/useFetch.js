@@ -7,7 +7,10 @@ const useFetch = (apiFunc) => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    console.log("Use fetch");
+
     useEffect(() => {
+        console.log("Use effect");
         setLoading(true);
         apiFunc()
             .then((response) => {
