@@ -1,4 +1,10 @@
 const MenuItems = [
+    // {
+    //     title: 'Inbox',
+    //     url: '#',
+    //     cName: 'nav-links',
+    //     icon: 'far fa-bell',
+    // },
     {
         title: 'Notifications',
         url: '#',

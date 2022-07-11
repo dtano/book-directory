@@ -12,6 +12,15 @@ body {
   background: #f2ebe9;
 }
 
+ul {
+  list-style: none;
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

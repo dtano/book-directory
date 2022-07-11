@@ -17,11 +17,6 @@
     align-items: center;
 }
 
-.NavBarItems ul {
-    list-style: none;
-    cursor: pointer;
-}
-
 .navbar-left li {
     display: inline-block;
     padding: 0px 15px;
@@ -85,10 +80,63 @@
     font-size: 20px;
 }
 
-.search-icon{
+.collapsible-menu{
     display: none;
-    cursor: pointer;
-    font-size: 20px;
+    padding: 0;
+    margin: 0;
+}
+
+.collapsible-menu-active{
+    display: block;
+    /* flex-direction: column; */
+    text-align: center;
+    justify-content: center;
+    position: fixed;
+    left: 0;
+    transition: 0.4s;
+
+    z-index: 9;
+
+    width: 100%;
+    min-height: 100vh;
+    
+    background-color: #264143;
+    
+    padding-top: 60px;
+    margin: 0;
+}
+
+.collapsible-menu-active ul{
+    padding: 0;
+    /* display: block; */
+    margin: 0 auto 16px;
+    max-width: 200px;
+}
+
+.collapsible-menu-active li{
+    padding: 12px 16px;
+    /* margin: 2px 0; */
+    font-size: 16px;
+    margin-bottom: 15px;
+    background-color: #34575a;
+}
+
+.collapsible-menu-active a{
+    color: white;
+}
+
+.collapsible-menu-active li:hover{
+    background-color: #4f8a8f;
+}
+
+.collapsible-menu-active hr{
+    border: 0;
+    clear: both;
+    display: block;
+    width: 96%;               
+    background-color:#1a2c2e;
+    height: 2px;
+    margin-bottom: 16px;
 }
 
 @media (max-width: 1200px) {
@@ -107,13 +155,9 @@
     }
 }
 
-@media (max-width: 750px){
+@media (max-width: 768px){
     .NavBarItems {
         padding: 0 3em;
-    }
-
-    .navbar-responsive{
-        display: inline;
     }
 
     .navbar-logo {
@@ -144,9 +188,14 @@
         display: none;
     }
 
-    .search-bar {
-        display: none;
+    .search-bar input{
+        width: 40vw;
+        font-size: 14px;
     }
+
+    /* .search-bar {
+        display: none;
+    } */
 
     .search-icon {
         display: inline;
