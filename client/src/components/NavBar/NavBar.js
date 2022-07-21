@@ -27,7 +27,10 @@ const NavBar = () => {
                         })}
                     </ul>
                     <div className='search-bar'>
-                        <input type="text" placeholder="Search books"/>
+                        <form action="/#">
+                            <input type='text' placeholder='Search books'/>
+                            <button type='submit'><i className="fas fa-search"></i></button>
+                        </form>
                     </div>
                 </div>
                 <div className='nav-menu'>
