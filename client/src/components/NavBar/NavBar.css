@@ -97,6 +97,10 @@
     color: #bbb;
 }
 
+.nav-menu ul{
+    padding: 0;
+}
+
 .nav-menu li{
     display: inline-block;
     padding: 0px 10px;
@@ -129,7 +133,6 @@
 
 .collapsible-menu-active{
     display: block;
-    /* flex-direction: column; */
     text-align: center;
     justify-content: center;
     position: fixed;
@@ -149,14 +152,12 @@
 
 .collapsible-menu-active ul{
     padding: 0;
-    /* display: block; */
     margin: 0 auto 16px;
     max-width: 200px;
 }
 
 .collapsible-menu-active li{
     padding: 12px 16px;
-    /* margin: 2px 0; */
     font-size: 16px;
     margin-bottom: 15px;
     background-color: #34575a;
@@ -202,7 +203,7 @@
     }
 
     .navbar-logo {
-        font-size: 22px;
+        font-size: 18px;
     }
 
     .hamburger {
