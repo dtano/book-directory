@@ -47,60 +47,7 @@
 }
 
 /*** Searchbar ***/
-
-.search-bar{
-    margin-left: 0.5em;
-}
-
-.search-bar form{
-    display: flex;
-    color: #555;
-    background-color: white;
-    padding: 1px;
-    border: none;
-    border-radius: 5px;
-}
-
-.search-bar input[type=text]{
-    background: transparent;
-    width: 25vw;
-    text-align: left;
-    font-size: 14px;
-    padding: 0.3em;
-    color: inherit;
-    border: 1px solid transparent;
-    border-radius: inherit;
-}
-
-.search-bar input[type=text]::placeholder {
-    color: #bbb;
-}
-
-.search-bar button{
-    padding: 0 10px;
-    background: transparent;
-    font-size: 14px;
-    border: 1px solid transparent;
-    border-radius: inherit;
-    cursor: pointer;
-    overflow: hidden;
-    opacity: 0.7;
-}
-
-.search-bar button:hover{
-    opacity: 1;
-}
-
-.search-bar input:focus {
-    box-shadow: 0 0 10px 0 #1183d6;
-    border-color: #1183d6;
-    outline: none;
-}
-
-.search-bar button i{
-    color: #bbb;
-}
-
+/*** Place css back here if the component route isn't working ***/
 
 /*** nav-menu -> The rightmost navbar links that are presented as icons ***/
 

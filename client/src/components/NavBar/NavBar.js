@@ -1,5 +1,6 @@
 import React, {useState, useRef} from 'react';
 import {MenuItems, LeftMenuItems} from './MenuItems';
+import SearchBar from '../SearchBar/SearchBar';
 import './NavBar.css';
 
 const NavBar = () => {
@@ -26,12 +27,7 @@ const NavBar = () => {
                             )
                         })}
                     </ul>
-                    <div className='search-bar'>
-                        <form action="/#">
-                            <input type='text' placeholder='Search books'/>
-                            <button type='submit'><i className="fas fa-search"></i></button>
-                        </form>
-                    </div>
+                    <SearchBar />
                 </div>
                 <div className='nav-menu'>
                     <ul>
