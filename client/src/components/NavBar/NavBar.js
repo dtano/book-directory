@@ -36,6 +36,13 @@ const NavBar = () => {
                                 <li key={index}><a className={item.cName} href={item.url}><i className={item.icon}></i></a></li>
                             )
                         })}
+                        <li class="dropdown">
+                            <button className='dropbtn'><i className='far fa-user'></i></button>
+                            <div className='dropdown-content'>
+                                <a href="/#">Profile</a>
+                                <a href="/#">Login</a>
+                            </div>
+                        </li>
                     </ul>
                 </div>
                 <button className='hamburger' onClick={handleClick}>

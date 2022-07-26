@@ -11,12 +11,12 @@ const MenuItems = [
         cName: 'nav-links',
         icon: 'far fa-bell',
     },
-    {
-        title: 'Profile',
-        url: '#',
-        cName: 'nav-links',
-        icon: 'far fa-user',
-    },
+    // {
+    //     title: 'Profile',
+    //     url: '#',
+    //     cName: 'nav-links',
+    //     icon: 'far fa-user',
+    // },
 ];
 
 const LeftMenuItems = [

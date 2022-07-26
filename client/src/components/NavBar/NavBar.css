@@ -75,6 +75,46 @@
     font-size: 16px;
 }
 
+/*** Dropdown profile -> The subnav window of the profile icon ***/
+
+.dropbtn{
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    margin: 0;
+}
+
+.dropdown-content{
+    display: none;
+    position: absolute;
+    background-color: #162627;
+    min-width: 160px;
+    /* padding: 10px; */
+    box-shadow: 0px 8px 16px 0px rgba(184, 182, 182, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content a{
+    float: none;
+    text-decoration: none;
+    color: white;
+    display: block;
+    text-align: left;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.dropdown-content a:hover{
+    background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content{
+    display: block;
+}
+
 /*** collapsible-menu -> The responsive hamburger menu ***/
 
 .hamburger{
@@ -185,6 +225,10 @@
     }
 
     .nav-links {
+        display: none;
+    }
+
+    .dropbtn{
         display: none;
     }
 
