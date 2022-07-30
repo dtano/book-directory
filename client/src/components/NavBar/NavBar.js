@@ -1,20 +1,20 @@
-import React, {useState, useRef} from 'react';
+import React, {useState} from 'react';
 import {MenuItems, LeftMenuItems} from './MenuItems';
 import SearchBar from '../SearchBar/SearchBar';
 import './NavBar.css';
 
 const NavBar = () => {
     const [isClicked, setIsClicked] = useState(false);
-    const collapsibleNavRef = useRef();
+    const [showAccountDropdown, setShowAccountDropdown] = useState(false);
 
     const handleClick = () => {
         setIsClicked(!isClicked);
     }
 
-    const showNavBar = () => {
-        collapsibleNavRef.current.classList.toggle("collapsible-menu");
+    const handleDropdown = () => {
+        setShowAccountDropdown(!showAccountDropdown);
     }
-    
+
     return (
         <React.Fragment>
             <nav className='NavBarItems'>
@@ -37,10 +37,10 @@ const NavBar = () => {
                             )
                         })}
                         <li class="dropdown">
-                            <button className='dropbtn'><i className='far fa-user'></i></button>
-                            <div className='dropdown-content'>
+                            <button className='dropbtn' onClick={handleDropdown}><i className='far fa-user'></i></button>
+                            <div className={showAccountDropdown ? 'dropdown-content' : 'dropdown-content-hidden'}>
                                 <a href="/#">Profile</a>
-                                <a href="/#">Login</a>
+                                <a href="/#">Logout</a>
                             </div>
                         </li>
                     </ul>

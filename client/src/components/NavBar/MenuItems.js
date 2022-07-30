@@ -31,7 +31,7 @@ const LeftMenuItems = [
         url: '#',
         cName: 'nav-links',
         icon: '',
-    }
+    },
 ]
 
 module.exports = {
