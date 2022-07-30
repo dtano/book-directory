@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {Link} from 'react-router-dom'
 import {MenuItems, LeftMenuItems} from './MenuItems';
 import SearchBar from '../SearchBar/SearchBar';
 import './NavBar.css';
@@ -23,7 +24,7 @@ const NavBar = () => {
                     <ul>
                         {LeftMenuItems.map((item, index) => {
                             return (
-                                <li key={index}><a className={item.cName} href={item.url}>{item.title}</a></li>
+                                <li key={index}><Link to={item.url} className={item.cName}>{item.title}</Link></li>
                             )
                         })}
                     </ul>
@@ -36,11 +37,11 @@ const NavBar = () => {
                                 <li key={index}><a className={item.cName} href={item.url}><i className={item.icon}></i></a></li>
                             )
                         })}
-                        <li class="dropdown">
+                        <li className="dropdown">
                             <button className='dropbtn' onClick={handleDropdown}><i className='far fa-user'></i></button>
                             <div className={showAccountDropdown ? 'dropdown-content' : 'dropdown-content-hidden'}>
-                                <a href="/#">Profile</a>
-                                <a href="/#">Logout</a>
+                                <Link to="/profile" onClick={handleDropdown}>Profile</Link>
+                                <Link to="/logout" onClick={handleDropdown}>Logout</Link>
                             </div>
                         </li>
                     </ul>

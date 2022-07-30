@@ -22,13 +22,13 @@ const MenuItems = [
 const LeftMenuItems = [
     {
         title: 'Home',
-        url: '#',
+        url: '/',
         cName: 'nav-links',
         icon: '',
     },
     {
         title: 'My Books',
-        url: '#',
+        url: '/books',
         cName: 'nav-links',
         icon: '',
     },
