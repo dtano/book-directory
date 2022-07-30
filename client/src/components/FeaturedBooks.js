@@ -1,6 +1,5 @@
 import React from 'react';
 import BookGrid from "./BookGrid";
-// import useApi from '../hooks/useApi';
 import useFetch from '../hooks/useFetch';
 import bookApi from '../API/bookApi';
 
@@ -13,6 +12,7 @@ const FeaturedBooksStyle = {
 }
 
 const FeaturedBooks = () => {
+    console.log("Mounting FeaturedBooks");
     const { data, error } = useFetch(bookApi.getAllBooks);
 
     if(error) console.log(error);

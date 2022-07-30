@@ -1,65 +1,75 @@
 import React, {useState} from 'react';
-import MenuItems from './MenuItems';
-import { Button } from '../Button';
+import {MenuItems, LeftMenuItems} from './MenuItems';
+import SearchBar from '../SearchBar/SearchBar';
 import './NavBar.css';
-
-// const NavBarItemsStyle = {
-//     background: 'green',
-//     height: '80px',
-//     display: 'flex',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     fontSize: '1.2rem',
-// }
-
-// const NavBarLogoStyle = {
-//     color: 'white',
-//     justifySelf: 'start',
-//     marginLeft: '20px',
-//     cursor: 'pointer',
-// }
-
-// const FaReactStyle = {
-//     marginLeft: '0.5rem',
-//     fontSize: '1.6rem',
-// }
-
-// const NavMenuStyle = {
-//     display: 'grid',
-//     gridTemplateColumns: 'repeat(3,auto)',
-//     gridGap: '10px',
-//     listStyle: 'none',
-//     textAlign: 'center',
-//     width: '70vw',
-//     justifyContent: 'end',
-//     marginRight: '2rem',
-// }
 
 const NavBar = () => {
     const [isClicked, setIsClicked] = useState(false);
+    const [showAccountDropdown, setShowAccountDropdown] = useState(false);
 
     const handleClick = () => {
         setIsClicked(!isClicked);
     }
-    
+
+    const handleDropdown = () => {
+        setShowAccountDropdown(!showAccountDropdown);
+    }
+
     return (
-        <nav className='NavBarItems'>
-            <h1 className='navbar-logo'>MyBrary<i className="fab fa-react"></i></h1>
-            <div className='search-bar'>
-                <input type="text" placeholder="Search.."/>
-            </div>
-            <div className='menu-icon' onClick={handleClick}>
-                <i className={isClicked ? 'fas fa-times' : 'fas fa-bars'}></i>
-            </div>
-            <ul className={isClicked ? 'nav-menu active' : 'nav-menu'}>
-                {MenuItems.map((item, index) => {
-                    return (
-                        <li key={index}><a className={item.cName} href={item.url}>{item.title}</a></li>
-                    )
-                })}
-            </ul>
-            <Button>Sign Up</Button>
-        </nav>
+        <React.Fragment>
+            <nav className='NavBarItems'>
+                <div className='navbar-left'>
+                    <h1 className='navbar-logo'>MyBrary<i className="fas fa-book-open"></i></h1>
+                    <ul>
+                        {LeftMenuItems.map((item, index) => {
+                            return (
+                                <li key={index}><a className={item.cName} href={item.url}>{item.title}</a></li>
+                            )
+                        })}
+                    </ul>
+                    <SearchBar />
+                </div>
+                <div className='nav-menu'>
+                    <ul>
+                        {MenuItems.map((item, index) => {
+                            return (
+                                <li key={index}><a className={item.cName} href={item.url}><i className={item.icon}></i></a></li>
+                            )
+                        })}
+                        <li class="dropdown">
+                            <button className='dropbtn' onClick={handleDropdown}><i className='far fa-user'></i></button>
+                            <div className={showAccountDropdown ? 'dropdown-content' : 'dropdown-content-hidden'}>
+                                <a href="/#">Profile</a>
+                                <a href="/#">Logout</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <button className='hamburger' onClick={handleClick}>
+                    <span/>
+                    <span/>
+                    <span/>
+                </button>
+            </nav>
+            <nav className={isClicked ? 'collapsible-menu-active' : 'collapsible-menu'}>
+                <div>
+                    <ul>
+                        <li><a href='/#'>Home</a></li>
+                        <li><a href='/#'>My Books</a></li>
+                        <li><a href='/#'>Notifications</a></li>
+                    </ul>
+                </div>
+                <hr/>
+                <div>
+                    <ul>
+                        <li><a href='/#'>Account settings</a></li>
+                        <li><a href='/#'>Sign in</a></li>
+                        <li><a href='/#'>Register</a></li>
+                        <li><a href='/#'>Logout</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </React.Fragment>
     );
 }
 

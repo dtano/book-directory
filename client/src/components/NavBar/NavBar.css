@@ -1,142 +1,256 @@
+/*** NavBarItems -> The entire nav bar ***/
+
 .NavBarItems {
-    background: green;
-    height: 80px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.0rem;
-    padding: 0 1rem;
+    background: #264143;
+    margin: 0;
+    padding: 0px 11em;
 }
 
-.navbar-logo {
+.NavBarItems i{
     color: white;
-    justify-self: start;
-    margin-left: 20px;
-    cursor: pointer;
-    background: blue;
 }
 
-.search-bar {
-    background: yellow;
-    width: 20vw;
-    padding: 0 2em;
-}
+/*** navbar-left -> The leftmost menu links in the nav bar, including the logo ***/
 
-.search-bar input[type=text] {
-    width: 200px;
-}
-
-.fa-react {
-    margin-left: 0.5rem;
-    font-size: 1.6rem;
-}
-
-.nav-menu {
+.navbar-left {
     display: flex;
-    list-style: none;
-    text-align: center;
-    width: 30vw;
-    justify-content: flex-end;
-    background: red;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* .nav-menu {
-    display: grid;
-    grid-template-columns: repeat(5, auto);
-    grid-gap: 10px;
-    list-style: none;
-    text-align: center;
-    width: 70vw;
-    justify-content: end;
-} */
-
-.nav-links {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
+.navbar-left li {
+    display: inline-block;
+    padding: 0px 15px;
+    font-size: 16px;
 }
 
-.nav-links:hover {
-    background-color: #6d76f7;
-    border-radius: 4px;
+.navbar-left li:hover{
+    background-color: rgb(204, 206, 205);
+    border-radius: 10px;
     transition: all 0.2s ease-out;
 }
 
-.nav-links-mobile {
+/*** Logo -> The logo on the left side of the navbar ***/
+
+.navbar-logo{
+    font-size: 18px;
+    margin-left: 1rem;
+    cursor: pointer;
+    color: white;
+}
+
+.navbar-logo i{
+    margin-left: 5px;
+}
+
+/*** Searchbar ***/
+/*** Place css back here if the component route isn't working ***/
+
+/*** nav-menu -> The rightmost navbar links that are presented as icons ***/
+
+.nav-menu ul{
+    padding: 0;
+}
+
+.nav-menu li{
+    display: inline-block;
+    padding: 0px 10px;
+    margin-right: 1rem;
+}
+
+.nav-menu li:hover{
+    background-color: rgb(204, 206, 205);
+    border-radius: 20px;
+    transition: all 0.3s ease 0s;
+}
+
+/*** nav-links -> Individual links on the navbar ***/
+
+.nav-links{
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+}
+
+/*** Dropdown profile -> The subnav window of the profile icon ***/
+
+.dropbtn{
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    margin: 0;
+}
+
+.dropdown-content{
+    display: block;
+    position: absolute;
+    margin-top: 12px;
+    background-color: white;
+    border-radius: 5px;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(184, 182, 182, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content-hidden{
     display: none;
 }
 
-.menu-icon {
-    display: none;
+.dropdown-content a{
+    float: none;
+    text-decoration: none;
+    color: #264143;
+    display: block;
+    /* border-radius: inherit; */
+    text-align: left;
+    padding: 8px;
+    font-size: 14px;
 }
 
-@media screen and (max-width: 960px) {
-    .NavbarItems {
-        position: relative;
+.dropdown-content a:hover{
+    background-color: #ddd;
+    border-radius: inherit;
+}
+
+/*** collapsible-menu -> The responsive hamburger menu ***/
+
+.hamburger{
+    display: none;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.collapsible-menu{
+    display: none;
+    padding: 0;
+    margin: 0;
+}
+
+.collapsible-menu-active{
+    display: block;
+    text-align: center;
+    justify-content: center;
+    position: fixed;
+    left: 0;
+    transition: 0.4s;
+
+    z-index: 9;
+
+    width: 100%;
+    min-height: 100vh;
+    
+    background-color: #264143;
+    
+    padding-top: 60px;
+    margin: 0;
+}
+
+.collapsible-menu-active ul{
+    padding: 0;
+    margin: 0 auto 16px;
+    max-width: 200px;
+}
+
+.collapsible-menu-active li{
+    padding: 12px 16px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    background-color: #34575a;
+}
+
+.collapsible-menu-active a{
+    color: white;
+}
+
+.collapsible-menu-active li:hover{
+    background-color: #4f8a8f;
+}
+
+.collapsible-menu-active hr{
+    border: 0;
+    clear: both;
+    display: block;
+    width: 96%;               
+    background-color:#1a2c2e;
+    height: 2px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 1200px) {
+    .NavBarItems{
+        padding: 0 6em;
     }
 
-    .nav-menu {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 500px;
-        position: absolute;
-        top: 80px;
-        left: -100%;
-        opacity: 1;
-        transition: all 0.5s ease;
+    .navbar-logo{
+        margin-left: 0;
     }
+}
 
-    .nav-menu.active {
-        background: #6668f4;
-        left: 0;
-        opacity: 1;
-        transition: all 0.5s ease;
-        z-index: 1;
+@media (max-width: 1000px) {
+    .NavBarItems{
+        padding: 0 2em;
     }
+}
 
-    .nav-links {
-        text-align: center;
-        padding: 2rem;
-        width: 100%;
-        display: table;
-    }
-
-    .nav-links:hover {
-        background-color: #7577f8;
-        border-radius: 0;
+@media (max-width: 768px){
+    .NavBarItems {
+        padding: 0 3em;
     }
 
     .navbar-logo {
-        position: absolute;
-        top: 0;
-        left: 0;
-        transform: translate(25%, 50%);
+        font-size: 18px;
     }
 
-    .menu-icon{
+    .hamburger {
         display: block;
-        position: absolute;
-        top: 0;
-        right: 0;
-        transform: translate(-100%, 60%);
-        font-size: 1.8rem;
-        cursor: pointer;
+        position: relative;
+        user-select: none;
+        appearance: none;
+        border: none;
+        background: none;
+        outline: none;
     }
 
-    .fa-times {
-        color: #fff;
-        font-size: 2rem;
-    }
-
-    .nav-links-mobile {
+    .hamburger span{
         display: block;
-        text-align: center;
-        padding: 1.5rem;
-        margin: 2rem auto;
-        border-radius: 4px;
-        width: 80%;
-        background: #4ab9e4;   
-        font-size: 1.5rem; 
+        width: 30px;
+        height: 4px;
+        margin-bottom: 5px;
+        position: relative;
+        border-radius: 6px;
+        background-color: white;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .dropbtn{
+        display: none;
+    }
+
+    .search-bar input{
+        width: 40vw;
+        font-size: 14px;
+    }
+
+    .search-icon {
+        display: inline;
+    }
+
+    .navbar-left li {
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-menu li{
+        padding: 0;
+        margin: 0;
     }
 }
