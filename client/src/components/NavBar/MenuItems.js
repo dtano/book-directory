@@ -1,14 +1,14 @@
 const MenuItems = [
-    // {
-    //     title: 'Inbox',
-    //     url: '#',
-    //     cName: 'nav-links',
-    //     icon: 'far fa-bell',
-    // },
+    {
+        title: 'Inbox',
+        url: '#',
+        cName: 'nav-icon-link',
+        icon: 'far fa-envelope',
+    },
     {
         title: 'Notifications',
         url: '#',
-        cName: 'nav-links',
+        cName: 'nav-icon-link',
         icon: 'far fa-bell',
     },
     // {
@@ -23,17 +23,20 @@ const ProfileDropdownItems = [
     {
         title: 'Profile',
         url: '/profile',
-        icon: 'fas fa-address-card'
+        icon: 'fas fa-address-card',
+        cName: 'dropdown-button-profile'
     },
     {
         title: 'Settings',
         url: '/settings',
-        icon: 'fas fa-cog'
+        icon: 'fas fa-cog',
+        cName: 'dropdown-button-settings'
     },
     {
         title: 'Logout',
         url: '/logout',
-        icon: 'fas fa-door-open'
+        icon: 'fas fa-door-open',
+        cName: 'dropdown-button-logout'
     }
 ];
 

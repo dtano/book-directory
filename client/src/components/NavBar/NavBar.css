@@ -53,15 +53,17 @@
 
 .nav-menu ul{
     padding: 0;
+    display: flex;
+    justify-content: space-between;
 }
 
-.nav-menu li{
-    display: inline-block;
+.nav-icon-link{
+    /* display: inline-block; */
     padding: 0px 10px;
     margin-right: 1rem;
 }
 
-.nav-menu li:hover{
+.nav-icon-link:hover{
     background-color: rgb(204, 206, 205);
     border-radius: 20px;
     transition: all 0.3s ease 0s;
@@ -78,6 +80,8 @@
 /*** Dropdown profile -> The subnav window of the profile icon ***/
 
 .dropbtn{
+    padding: 0px 10px;
+    margin-right: 1rem;
     background: transparent;
     border: none;
     outline: none;
@@ -85,6 +89,12 @@
     cursor: pointer;
     font-family: inherit;
     margin: 0;
+}
+
+.dropbtn:hover{
+    background-color: rgb(204, 206, 205);
+    border-radius: 20px;
+    transition: all 0.3s ease 0s;
 }
 
 .dropdown-content{
@@ -123,6 +133,10 @@
     color: #264143;
     margin-right: 12px;
     background-size: 12px;
+}
+
+.dropdown-button-settings i{
+    font-size: 16px;
 }
 
 .dropdown-content a:hover{
@@ -240,6 +254,10 @@
     }
 
     .nav-links {
+        display: none;
+    }
+
+    .nav-icon-link {
         display: none;
     }
 

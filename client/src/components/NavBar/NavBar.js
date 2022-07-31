@@ -34,21 +34,19 @@ const NavBar = () => {
                     <ul>
                         {MenuItems.map((item, index) => {
                             return (
-                                <li key={index}><a className={item.cName} href={item.url}><i className={item.icon}></i></a></li>
+                                <li key={index} className={item.cName}><a href={item.url}><i className={item.icon}></i></a></li>
                             )
                         })}
                         <li className="dropdown">
                             <button className='dropbtn' onClick={handleDropdown}><i className='far fa-user'></i></button>
                             <div className={showAccountDropdown ? 'dropdown-content' : 'dropdown-content-hidden'}>
-                                <ul>
-                                    {ProfileDropdownItems.map((item) => {
-                                        return(
-                                            <div className='dropdown-menu-button'>
-                                                <Link to={item.url} onClick={handleDropdown}><i className={item.icon}></i>{item.title}</Link>
-                                            </div>
-                                        )
-                                    })}
-                                </ul>
+                                {ProfileDropdownItems.map((item) => {
+                                    return(
+                                        <div className='dropdown-menu-button'>
+                                            <Link to={item.url} onClick={handleDropdown} className={item.cName}><i className={item.icon}></i>{item.title}</Link>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         </li>
                     </ul>
