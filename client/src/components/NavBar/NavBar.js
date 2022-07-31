@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Link} from 'react-router-dom'
-import {MenuItems, LeftMenuItems} from './MenuItems';
+import {MenuItems, LeftMenuItems, ProfileDropdownItems} from './MenuItems';
 import SearchBar from '../SearchBar/SearchBar';
 import './NavBar.css';
 
@@ -40,8 +40,15 @@ const NavBar = () => {
                         <li className="dropdown">
                             <button className='dropbtn' onClick={handleDropdown}><i className='far fa-user'></i></button>
                             <div className={showAccountDropdown ? 'dropdown-content' : 'dropdown-content-hidden'}>
-                                <Link to="/profile" onClick={handleDropdown}>Profile</Link>
-                                <Link to="/logout" onClick={handleDropdown}>Logout</Link>
+                                <ul>
+                                    {ProfileDropdownItems.map((item) => {
+                                        return(
+                                            <div className='dropdown-menu-button'>
+                                                <Link to={item.url} onClick={handleDropdown}><i className={item.icon}></i>{item.title}</Link>
+                                            </div>
+                                        )
+                                    })}
+                                </ul>
                             </div>
                         </li>
                     </ul>
@@ -63,9 +70,8 @@ const NavBar = () => {
                 <hr/>
                 <div>
                     <ul>
-                        <li><a href='/#'>Account settings</a></li>
-                        <li><a href='/#'>Sign in</a></li>
-                        <li><a href='/#'>Register</a></li>
+                        <li><a href='/#'>Profile</a></li>
+                        <li><a href='/#'>Account Settings</a></li>
                         <li><a href='/#'>Logout</a></li>
                     </ul>
                 </div>

@@ -19,6 +19,24 @@ const MenuItems = [
     // },
 ];
 
+const ProfileDropdownItems = [
+    {
+        title: 'Profile',
+        url: '/profile',
+        icon: 'fas fa-address-card'
+    },
+    {
+        title: 'Settings',
+        url: '/settings',
+        icon: 'fas fa-cog'
+    },
+    {
+        title: 'Logout',
+        url: '/logout',
+        icon: 'fas fa-door-open'
+    }
+];
+
 const LeftMenuItems = [
     {
         title: 'Home',
@@ -37,4 +55,5 @@ const LeftMenuItems = [
 module.exports = {
     MenuItems,
     LeftMenuItems,
+    ProfileDropdownItems
 }

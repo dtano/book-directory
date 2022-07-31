@@ -92,6 +92,7 @@
     position: absolute;
     margin-top: 12px;
     background-color: white;
+    /* padding: 3px; */
     border-radius: 5px;
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(184, 182, 182, 0.2);
@@ -100,6 +101,11 @@
 
 .dropdown-content-hidden{
     display: none;
+}
+
+.dropdown-menu-button{
+    padding: 0;
+    margin-right: 0;
 }
 
 .dropdown-content a{
@@ -113,9 +119,15 @@
     font-size: 14px;
 }
 
+.dropdown-content i{
+    color: #264143;
+    margin-right: 12px;
+    background-size: 12px;
+}
+
 .dropdown-content a:hover{
     background-color: #ddd;
-    border-radius: inherit;
+    /* border-radius: inherit; */
 }
 
 /*** collapsible-menu -> The responsive hamburger menu ***/
