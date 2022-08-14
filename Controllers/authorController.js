@@ -4,9 +4,6 @@ const {isEmpty, isNullOrEmpty} = require('./general');
 // Create a new author entry
 const postAuthor = async (req, res) => {
   try {
-    if(isNullOrEmpty(req.body)) throw new Error('Request body is empty');
-    
-    console.log(req.file);
     // Add the author image file path to the query body if there is an image attached
     //req.body.profile_picture = req.file != null ? req.file.filename : null;
 
@@ -55,9 +52,6 @@ const getAuthor = async (req, res) => {
 const updateAuthor = async (req, res) => {
   const {id: authorId} = req.params;
   try {
-    console.log(req.file);
-    if(isEmpty(req.body)) throw new Error(`Request body is empty`);
-
     const {updatedAuthor, previousValues} = await authorService.updateAuthor(authorId, req.body);
 
     res.status(200).json(updatedAuthor.toJSON());

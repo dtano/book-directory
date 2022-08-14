@@ -1,5 +1,5 @@
 import './App.css';
-import FeaturedBooks from './components/FeaturedBooks';
+import Home from './components/HomePage/Home';
 import NavBar from './components/NavBar/NavBar';
 import {
   BrowserRouter as Router,
@@ -14,7 +14,7 @@ function App() {
         <NavBar/>
         <div className='container'>
           <Routes>
-            <Route path='/' element={<FeaturedBooks />} />
+            <Route path='/' element={<Home />} />
             <Route path='/books' element={<h1>My Books</h1>}/>
             <Route path='/profile' element={<h1>My Profile</h1>}/>
             <Route path='/logout' element={<h1>Logout</h1>}/>

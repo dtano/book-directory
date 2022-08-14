@@ -1,5 +1,5 @@
 const {Author, Book} = require('../models/');
-const {deleteFile} = require('../controllers/general');
+const {deleteFile, isNullOrEmpty, isEmpty} = require('../controllers/general');
 const Op = require('../models/index').Sequelize.Op; 
 
 const path = require('path');
@@ -10,6 +10,10 @@ const authorImgPath = path.join(__dirname, '../public/uploads/authors/');
 const authorService = {
     createAuthor: async (details) => {
         try{
+            if(isNullOrEmpty(details)){
+                throw new Error('Request body is empty');
+            }
+
             const [row, created] = await Author.findOrCreate({
                 where: details,
             });
@@ -43,6 +47,8 @@ const authorService = {
     },
 
     updateAuthor: async (authorId, newInformation) => {
+        if(isEmpty(req.body)) throw new Error(`Request body is empty`);
+        
         const author = await authorService.findAuthor({id: authorId});
         const previousValues = author.dataValues;
         

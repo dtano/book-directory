@@ -1,0 +1,93 @@
+.home-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    padding: 15px 0;
+    margin-bottom: 2em;
+}
+
+.currently-reading{
+    border: 1px solid blue;
+    width: 40vh;
+    padding-top: 0;
+    text-align: center;
+}
+
+.currently-reading-books-list{
+    padding: 0;
+}
+
+.book-title{
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+.book-author{
+  margin-top: 0;
+}
+
+.home-bottom{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.borrow-status{
+    border: 1px solid green;
+    text-align: center;
+}
+
+/* TBR Container */
+.tbr-container{
+    text-align: center;
+    width: 40vh;
+    border: 1px solid purple; 
+    padding-bottom: 1em;
+}
+
+.tbr-container .tbr-book-list{
+    margin: 0;
+    padding: 0;
+    margin-bottom: 1em;
+}
+
+.tbr-book-card{
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: row;
+    padding: 0.5em 1em;
+    margin: 0 10px;
+    margin-bottom: 4px;
+}
+
+.small-cover{
+    height: 50px;
+    border: 1px solid blue;
+}
+
+.book-details{
+    margin-left: 1em;
+    /* border: 1px solid pink; */
+    padding-top: 5px;
+}
+
+.book-details h3{
+    margin: 0;
+    font-size: 14px;
+    text-align: left;
+}
+
+.book-details p{
+    font-size: 12px;
+    margin: 0;
+    text-align: left;
+}
+
+.tbr-container .view-all-button{
+    margin-bottom: 8px;
+    cursor: pointer;
+    padding: 5px 10px;
+    /* border: none;
+    border-radius: 5px;
+    background-color: blanchedalmond; */
+}

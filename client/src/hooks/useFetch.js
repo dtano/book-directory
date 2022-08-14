@@ -10,7 +10,6 @@ const useFetch = (apiFunc) => {
     console.log("Use fetch");
 
     useEffect(() => {
-        console.log("Use effect");
         setLoading(true);
         apiFunc()
             .then((response) => {
@@ -20,7 +19,7 @@ const useFetch = (apiFunc) => {
                 setError(err);
             })
             .finally(() => setLoading(false));
-    }, [apiFunc]);
+    }, []);
 
     return {data, error, loading};
 }
