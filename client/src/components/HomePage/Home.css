@@ -1,9 +1,25 @@
-.home-container{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
+.home-all{
+    margin: 1em 2em;
     padding: 15px 0;
-    margin-bottom: 2em;
+}
+
+.home-container{
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto auto;
+    row-gap: 2em;
+    column-gap: 8em;
+    margin-left: 50px;
+    /* justify-content: space-between; */
+    /* flex-direction: row;
+    justify-content: space-evenly; */
+    /* padding: 15px 0; */
+    /* margin-bottom: 2em; */
+}
+
+.featured-books{
+    width: auto;
+    grid-area: 1 / span 2;
 }
 
 .currently-reading{
@@ -11,6 +27,7 @@
     width: 40vh;
     padding-top: 0;
     text-align: center;
+    justify-self: center;
 }
 
 .currently-reading-books-list{
@@ -26,15 +43,10 @@
   margin-top: 0;
 }
 
-.home-bottom{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-}
-
 .borrow-status{
     border: 1px solid green;
     text-align: center;
+    grid-area: 2 / span 2;
 }
 
 /* TBR Container */
@@ -43,6 +55,7 @@
     width: 40vh;
     border: 1px solid purple; 
     padding-bottom: 1em;
+    justify-self: center;
 }
 
 .tbr-container .tbr-book-list{
@@ -87,7 +100,4 @@
     margin-bottom: 8px;
     cursor: pointer;
     padding: 5px 10px;
-    /* border: none;
-    border-radius: 5px;
-    background-color: blanchedalmond; */
 }
